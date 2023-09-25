@@ -1,8 +1,8 @@
-#+TITLE:Emacs config
+Emacs:#+TITLE config
 #+AUTHOR: clauxx
 #+DESCRIPTION: My personal config for Emacs
-#+STARTUP: showeverything
-#+OPTIONS: toc:2
+#+startup: showeverything
+#+options: toc:3
 
 * Table of contents :toc:
 - [[#core-config][Core config]]
@@ -15,11 +15,14 @@
   - [[#projectile][Projectile]]
   - [[#treemacs][Treemacs]]
   - [[#dashboard][Dashboard]]
+  - [[#tabs][Tabs]]
 - [[#language-support][Language support]]
   - [[#general][General]]
   - [[#clojurescript][Clojure(script)]]
+- [[#magit][Magit]]
 - [[#keybindings][Keybindings]]
 - [[#interface][Interface]]
+  - [[#theme][Theme]]
   - [[#fonts][Fonts]]
   - [[#icons][Icons]]
   - [[#gui][GUI]]
@@ -28,11 +31,17 @@
 - [[#org-mode][Org-mode]]
   - [[#general-config][General config]]
   - [[#source-code-block-tag-expansion][Source Code Block Tag Expansion]]
+  - [[#org-projectile][Org-projectile]]
 
 * Core config
 
-#+begin_src 
+#+begin_src emacs-lisp
+(server-start)
 (setq completion-cycle-threshold t) ;; use TAB for cycling selections
+(setq enable-recursive-minibuffers t)
+
+(setq initial-scratch-message "")
+;;(setq-default message-log-max nil)
 #+end_src
 
 * Packages
@@ -117,7 +126,7 @@ Very important that this is loaded first!!
   (use-package evil-collection
     :after evil
     :config
-    (setq evil-collection-mode-list '(dashboard dired ibuffer))
+    (setq evil-collection-mode-list '(dashboard dired ibuffer magit))
     (evil-collection-init))
 
   (use-package evil-tutor)
@@ -153,15 +162,24 @@ Search
   :config (counsel-mode))
 
 (use-package ivy
-  :bind
-  ;; ivy-resume resumes the last Ivy-based completion.
-  (("C-c C-r" . ivy-resume)
-   ("C-x B" . ivy-switch-buffer-other-window))
   :custom
   (setq ivy-use-virtual-buffers t)
   (setq ivy-count-format "(%d/%d) ")
+  (setq ivy-wrap t)
+  (setq ivy-action-wrap t)
   (setq enable-recursive-minibuffers t)
+  ;; not working :(
+  ;; (add-to-list 'ivy-ignore-buffers "\\*scratch\\*")
+  ;; (add-to-list 'ivy-ignore-buffers "\\*lsp-log\\*")
+  ;; (add-to-list 'ivy-ignore-buffers "\\*clojure-lsp\\*")
+  ;; (add-to-list 'ivy-ignore-buffers "\\*dashboard\\*")
+  ;; (add-to-list 'ivy-ignore-buffers "\\*Messages\\*")
   :config
+  (define-key ivy-minibuffer-map (kbd "TAB") 'ivy-next-line)
+  (define-key ivy-minibuffer-map (kbd "J") 'ivy-next-line)
+  (define-key ivy-minibuffer-map (kbd "K") 'ivy-previous-line)
+  (define-key ivy-minibuffer-map (kbd "<ESC>") 'minibuffer-keyboard-quit)
+  (define-key swiper-map (kbd "<ESC>") 'minibuffer-keyboard-quit)
   (ivy-mode))
 
 (use-package all-the-icons-ivy-rich
@@ -169,16 +187,21 @@ Search
   :init (all-the-icons-ivy-rich-mode 1))
 
 (use-package ivy-rich
-  :after ivy
+  :after counsel
   :ensure t
-  :init (ivy-rich-mode 1) ;; this gets us descriptions in M-x.
-  :custom
-  (ivy-virtual-abbreviate 'full
-   ivy-rich-switch-buffer-align-virtual-buffer t
-   ivy-rich-path-style 'abbrev)
-  :config
-  (ivy-set-display-transformer 'ivy-switch-buffer
-                               'ivy-rich-switch-buffer-transformer))
+  :init (setq ivy-rich-parse-remote-file-path t)
+  :config (ivy-rich-mode 1))
+
+(defun ivy-with-thing-at-point (cmd)
+  (let ((ivy-initial-inputs-alist
+         (list
+          (cons cmd (thing-at-point 'symbol)))))
+    (funcall cmd)))
+
+(defun counsel-ag-thing-at-point ()
+  (interactive)
+  (ivy-with-thing-at-point 'counsel-ag))
+
 #+end_src
 
 ** VTerm 
@@ -223,10 +246,25 @@ Terminal emulator inside emacs (+ VTerm Toggle)
 Managing projects inside Emacs
 
 #+begin_src emacs-lisp
-  (use-package projectile
-    :config
-    (projectile-mode +1)
-    (setq projectile-project-search-path '("~/dev/" "~/work/")))
+(use-package projectile
+  :config
+  (setq projectile-indexing-method 'alien)
+  (setq projectile-completion-system 'ivy)
+  (setq projectile-project-search-path '("~/dev/" "~/work/")))
+
+(setq async-shell-command-buffer 'display-buffer)
+
+(setq status-clojure-buffer "*Status: run-ios*")
+(setq status-clojure-buffer "*Status: shadow-cljs*")
+(setq status-metro-buffer "*Status: metro*")
+
+(add-to-list 'display-buffer-alist '(status-clojure-buffer . (display-buffer-no-window . nil)))
+(add-to-list 'display-buffer-alist '(status-metro-buffer . (display-buffer-no-window . nil)))
+(defun projectile-shell-command (command &optional name)
+  (interactive "MAsync shell command: \nsBuffer name (*Async Shell Command*): ")
+  (let ((output-buffer (or name "*Async Shell Command*")))
+    (projectile-with-default-dir (projectile-acquire-root)
+      (async-shell-command command output-buffer))))
 #+end_src
 
 ** Treemacs
@@ -362,14 +400,65 @@ Start screen
   (dashboard-setup-startup-hook))
 #+end_src
 
+** Tabs
+
+#+begin_src emacs-lisp
+;;(tab-bar-mode t)                              ;; enable tab bar
+(setq tab-bar-show t)                         ;; hide bar if <= 1 tabs open
+(setq tab-bar-close-button-show nil)          ;; hide tab close / X button
+(setq tab-bar-new-tab-choice "*dashboard*")   ;; buffer to show in new tabs
+(setq tab-bar-tab-hints t)                    ;; show tab numbers
+(setq tab-bar-format '(tab-bar-format-tabs tab-bar-separator))
+(setq tab-bar-select-tab-modifiers '(meta))
+
+(defun tab-bar-tab-name-format-default (tab i)
+  (let ((current-p (eq (car tab) 'current-tab))
+        (tab-num (if (and tab-bar-tab-hints (< i 10))
+                     (format "[%d]" i) "")))
+    (propertize
+     (concat "  " (alist-get 'name tab) " " tab-num " ")
+     'face (funcall tab-bar-tab-face-function tab))))
+
+(setq tab-bar-tab-name-format-function #'tab-bar-tab-name-format-default)
+
+(set-face-attribute 'tab-bar nil
+                    :height 160
+                    :box '(:line-width 4 :color "#FFFFFF")
+                    :background "#FAFAFA"
+                    :foreground "#333333")
+(set-face-attribute 'tab-bar-tab nil
+                    :family (face-attribute 'default :family)
+                    :weight 'bold
+                    :background "#81A1C1"
+                    :foreground "#FAFAFA")
+(set-face-attribute 'tab-bar-tab-inactive nil
+                    :family (face-attribute 'default :family)
+                    :slant 'italic
+                    :weight 'normal
+                    :background "#FFFFFF"
+                    :foreground "#37474F")
+
+(use-package burly
+  :config
+  (burly-tabs-mode t))
+
+;; (use-package awesome-tab
+;;   :elpaca (:host github :repo "manateelazycat/awesome-tab")
+;;   :config
+;;   (awesome-tab-mode t)
+;;   (setq awesome-tab-cycle-scope 'tabs)
+;;   (setq awesome-tab-show-tab-index t))
+
+#+end_src
 
 * Language support
 ** General
 
 #+begin_src emacs-lisp
 (use-package lsp-mode
-  :config
-  (lsp-enable-which-key-integration t))
+  :init
+  (setq lsp-file-watch-threshold 3000)
+  (setq lsp-enable-which-key-integration t))
 (use-package lsp-treemacs)
 (use-package flycheck)
 (use-package company)
@@ -387,10 +476,31 @@ Start screen
 
 #+begin_src emacs-lisp
 (use-package clojure-mode)
-(use-package cider)
+(use-package cider
+  :init
+  (setq cider-use-overlays t)
+  (setq cider-repl-display-in-current-window t)
+  (setq cider-result-overlay-position 'at-point)
+  (setq clojure-toplevel-inside-comment-form t)
+  (setq cider-eval-result-prefix "--> "))
+
+;; Paredit (kinda)
+(use-package evil-cleverparens)
+
+(add-hook 'clojure-mode-hook #'evil-cleverparens-mode)
+(add-hook 'clojurescript-mode-hook #'evil-cleverparens-mode)
 
 (add-hook 'clojure-mode-hook 'lsp)
+(add-hook 'clojure-mode-hook #'cider-mode)
+(add-hook 'clojure-mode-hook 'smartparens-mode)
+
 (add-hook 'clojurescript-mode-hook 'lsp)
+(add-hook 'clojurescript-mode-hook #'cider-mode)
+(add-hook 'clojurescript-mode-hook 'smartparens-mode)
+
+(add-hook 'cider-repl-mode-hook 'lsp)
+(add-hook 'cider-repl-mode-hook #'cider-mode)
+(add-hook 'cider-repl-mode-hook 'smartparens-mode)
 
 (setq gc-cons-threshold (* 100 1024 1024)
       read-process-output-max (* 1024 1024)
@@ -399,15 +509,13 @@ Start screen
       ; lsp-enable-indentation nil ; uncomment to use cider indentation instead of lsp
       ; lsp-enable-completion-at-point nil ; uncomment to use cider completion instead of lsp
       )
-#+end_src
 
-*** Zprint
-#+begin_src emacs-lisp
+;; Autoformatting with zprint
 (defun zprint-format-buffer ()
   "Use zprint to format the current buffer."
   (interactive)
   (let ((original-point (point)))
-    (shell-command-on-region (point-min) (point-max) "zprint" (current-buffer) t)
+    (shell-command-on-region (point-min) (point-max) "zprint '{:search-config? true}'" (current-buffer) t)
     (goto-char original-point)))
 
 (defun add-zprint-on-save-hook ()
@@ -418,11 +526,33 @@ Start screen
 (add-hook 'clojurescript-mode-hook 'add-zprint-on-save-hook)
 #+end_src
 
+* Magit
+
+#+begin_src emacs-lisp
+  
+  (defun magit-status-fullscreen (prefix)
+    (interactive "P")
+    (magit-status)
+    (unless prefix
+      (delete-other-windows)))
+
+    ; (winner-mode 1) ;; winner-mode remembers the window configurations, allowing you to easily switch back to previous configurations.
+
+    ; (defun magit-fullscreen ()
+    ;   "Open Magit status in a full window and remember previous configuration."
+    ;   (interactive)
+    ;   (delete-other-windows)
+    ;   (magit-status-setup-buffer)
+    ;   (add-hook 'magit-mode-quit-window-hook 'winner-undo nil t))
+
+#+end_src
+
 * Keybindings
 Using the @general package and @wk (which-key)
 
 #+begin_src emacs-lisp
 (use-package general
+  :after evil
   :config
   (general-evil-setup)
 
@@ -430,9 +560,12 @@ Using the @general package and @wk (which-key)
      :states 'normal
      :keymaps 'override
 
+     "§ §" '(switch-to-buffer :wk "Switch buffer")
+     ;;"TAB TAB" 'switch-to-buffer ;; breaks magit
      "g d" 'lsp-find-definition
-     ;; "g D" 'lsp-ui-peek-find-references
-     "g D" 'lsp-treemacs-references
+     "g D" 'lsp-ui-peek-find-references
+     "g c" 'comment-line
+     ;;"g D" 'lsp-treemacs-references
      "g r" 'lsp-rename
      ;; TODO Add focusing on the doc frame
      "K"  'lsp-ui-doc-toggle)
@@ -444,39 +577,44 @@ Using the @general package and @wk (which-key)
     :global-prefix "M-SPC")
 
   (cl/leader-keys
-    "SPC"  '(find-file :wk "Find file")
-    "c c"    '(comment-line :wk "Comment lines"))
+    "SPC"  '(projectile-find-file :wk "Search")
+    "c"    'kill-this-buffer)
 
   (cl/leader-keys
     "p" '(projectile-command-map :wk "projectile"))
 
   (cl/leader-keys
-    "TAB" '(:ignore :wk "treemacs")
-    "TAB TAB" '(treemacs-select-window :wk "Show treemacs")
-    "TAB f" '(treemacs-find-file :wk "Find file in treemacs")
-)
+    "TAB" '(treemacs-select-window :wk "Show treemacs"))
 
   (cl/leader-keys
-    ""  '(:ignore t :wk "evaluate")
-    "e l"  '(:ignore t :wk "elisp (configs)")
-    "e l b" '(eval-buffer :wk "Evaluate elisp in buffer")
-    "e l d" '(eval-defun :wk "Evaluate elisp defun")
-    "e l r" '(eval-region :wk "Evaluate elisp in region"))
+    "g" '(:ignore :wk "magit")
+    "g g" '(magit-status-fullscreen :wk "Show magit status"))
 
   (cl/leader-keys
     "e"  '(:ignore t :wk "evaluate")
+    ;; elisp
     "e l"  '(:ignore t :wk "elisp (configs)")
     "e l b" '(eval-buffer :wk "Evaluate elisp in buffer")
     "e l d" '(eval-defun :wk "Evaluate elisp defun")
-    "e l r" '(eval-region :wk "Evaluate elisp in region"))
+    "e l r" '(eval-region :wk "Evaluate elisp in region")
+
+    ;; status-mobile
+    "e s"   '(:ignore t :wk "status-mobile")
+    "e s i" '((lambda () (interactive) (projectile-shell-command "make run-ios" status-clojure-buffer)) :wk "Run ios")
+    "e s c" '((lambda () (interactive) (projectile-shell-command "make run-clojure" status-clojure-buffer)) :wk "Run shadow-cljs")
+    "e s m" '((lambda () (interactive) (projectile-shell-command "make run-metro" status-metro-buffer)) :wk "Run metro"))
 
   (cl/leader-keys
-    "f"  '(:ignore t :wk "find")
+    "f"   '(:ignore t :wk "find")
+    "f ." '(find-file :wk "Find current dir")
+    "f f" '(counsel-ag :wk "Find by word")
+    "f c" '(counsel-ag-thing-at-point :wk "Find at cursor")
     "f r" '(counsel-recentf :wk "Find recent"))
 
   (cl/leader-keys
-    "t"  '(:ignore t :wk "term")
-    "t t" '(vterm-toggle :wk "Toggle term"))
+    "o"  '(:ignore t :wk "open")
+    "o t" '(vterm-toggle :wk "Open term")
+    "o h" '(dashboard-open :wk "Open home dashboard"))
 
   (cl/leader-keys
     "h"  '(:ignore t :wk "help")
@@ -500,15 +638,54 @@ Using the @general package and @wk (which-key)
   (cl/leader-keys
     "b"  '(:ignore t :wk "buffer")
     "b b" '(switch-to-buffer :wk "Switch buffer")
-    "b i" '(ibuffer :wk "Show buffers")
+    "b i" '(counsel-switch-buffer :wk "Show buffers")
     "b c" '(kill-this-buffer :wk "Kill this buffer")
     "b n" '(next-buffer :wk "Next buffer")
     "b p" '(previous-buffer :wk "Previous buffer")
-    "b r" '(revert-buffer :wk "Reload buffer")))
+    "b r" '(revert-buffer :wk "Reload buffer"))
+
+  (cl/leader-keys
+    "t"  '(:ignore t :wk "tabs")
+    "t s" '(burly-bookmark-windows :wk "Save tab bookmark")
+    "t o" '(burly-open-bookmark :wk "Open tab bookmark")
+    "t n" '(tab-bar-new-tab :wk "New tab")
+    "t c" '(tab-bar-close-tab :wk "Close tab")
+    "t r" '(tab-bar-rename-tab :wk "Rename tab")
+    "t f" '((lambda () (interactive) (tab-bar-move-tab 1)) :wk "Move tab forward")
+    "t b" '((lambda () (interactive) (tab-bar-move-tab -1)) :wk "Move tab backward")
+    "t u" '(tab-bar-undo-close-tab :wk "Undo tab"))
+
+  (general-create-definer cl/clj-keys
+    :states '(normal insert visual emacs)
+    :keymaps 'clojure-mode-map 
+    :prefix ","
+    :global-prefix "M-,")
+
+  (cl/clj-keys
+    "e"  '(:ignore t :wk "evaluate")
+    "e b" '(cider-eval-buffer :wk "REPL eval buffer")
+    "e e" '(cider-eval-list-at-point :wk "REPL eval around"))
+
+  (cl/clj-keys
+    "r"  '(:ignore t :wk "repl")
+    "rr" '(cider-connect-cljs :wk "REPL at point")))
+
 #+end_src
 
 
 * Interface
+** Theme 
+*** Nano theme
+#+begin_src emacs-lisp
+;;(use-package nano-theme)
+  ;;(nano-light))
+
+;; (use-package nano-modeline)
+;; (add-hook 'prog-mode-hook            #'nano-modeline-prog-mode)
+;; (add-hook 'text-mode-hook            #'nano-modeline-text-mode)
+;; (add-hook 'org-mode-hook             #'nano-modeline-org-mode)
+
+#+end_src
 ** Fonts
 
 #+begin_src emacs-lisp
@@ -607,4 +784,15 @@ Org-tempo is not a separate package but a module within org that can be enabled.
 
 #+begin_src emacs-lisp 
 (require 'org-tempo)
+#+end_src
+
+** Org-projectile
+#+begin_src emacs-lisp
+(use-package org-projectile
+  ;;:bind (("C-c n p" . org-project-capture-project-todo-completing-read))
+  :ensure t
+  :config
+  (progn
+    (setq org-project-capture-projects-file "~/org/projects.org")
+    (org-project-capture-single-file)))
 #+end_src
