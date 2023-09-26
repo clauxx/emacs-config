@@ -1,4 +1,4 @@
-Emacs:#+TITLE config
+#+TITLE config
 #+AUTHOR: clauxx
 #+DESCRIPTION: My personal config for Emacs
 #+startup: showeverything
@@ -11,7 +11,7 @@ Emacs:#+TITLE config
   - [[#load-evil-mode][Load Evil-Mode]]
   - [[#whichkey][Whichkey]]
   - [[#ivy][Ivy]]
-  - [[#vterm][VTerm]]
+  - [[#eshell][EShell]]
   - [[#projectile][Projectile]]
   - [[#treemacs][Treemacs]]
   - [[#dashboard][Dashboard]]
@@ -41,6 +41,10 @@ Emacs:#+TITLE config
 (setq enable-recursive-minibuffers t)
 
 (setq initial-scratch-message "")
+
+;; prefer vertical splits over horizontal
+(setq split-width-threshold 0)
+
 ;;(setq-default message-log-max nil)
 #+end_src
 
@@ -192,6 +196,20 @@ Search
   :init (setq ivy-rich-parse-remote-file-path t)
   :config (ivy-rich-mode 1))
 
+(use-package ivy-posframe
+  :after ivy
+  :ensure t
+  :custom-face
+  (ivy-posframe-border ((t (:background "#eceff1"))))
+  (ivy-posframe ((t (:background "#eceff1"))))
+  :init 
+  (setq ivy-posframe-width 100)
+  (setq ivy-posframe-height 11)
+  (setq ivy-posframe-border-width 32)
+  (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display)))
+  (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-center)))
+  (ivy-posframe-mode))
+
 (defun ivy-with-thing-at-point (cmd)
   (let ((ivy-initial-inputs-alist
          (list
@@ -204,41 +222,47 @@ Search
 
 #+end_src
 
-** VTerm 
+** EShell 
 
-Terminal emulator inside emacs (+ VTerm Toggle)
+Emacs' shell written in Elisp
 
 #+begin_src emacs-lisp
-    (use-package vterm
-      :hook
-      (vterm-mode . evil-emacs-state)
-      (vterm-copy-mode . meliache/evil-normal-in-vterm-copy-mode)
-      :config
-      (defun meliache/evil-normal-in-vterm-copy-mode ()
-        (if (bound-and-true-p vterm-copy-mode)
-            (evil-normal-state)
-            (evil-emacs-state)))
-      (setq shell-file-name "/bin/zsh"
-            vterm-max-scrollback 5000))
+(setq eshell-scroll-to-bottom-on-input 'all
+      eshell-error-if-no-glob t
+      eshell-hist-ignoredups t
+      eshell-save-history-on-exit t
+      eshell-prefer-lisp-functions nil
+      eshell-destroy-buffer-when-process-dies t)
 
-    (use-package vterm-toggle
-      :after vterm
-      :config
-      (setq vterm-toggle-fullscreen-p t)
-      (setq vterm-toggle-scope 'project)
-      (add-to-list 'display-buffer-alist
-                   '((lambda (buffer-or-name _)
-                         (let ((buffer (get-buffer buffer-or-name)))
-                           (with-current-buffer buffer
-                             (or (equal major-mode 'vterm-mode)
-                                 (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
-                      (display-buffer-reuse-window display-buffer-at-bottom)
-                      ;;(display-buffer-reuse-window display-buffer-in-direction)
-                      ;;display-buffer-in-direction/direction/dedicated is added in emacs27
-                      ;;(direction . bottom)
-                      ;;(dedicated . t) ;dedicated is supported in emacs27
-                      (reusable-frames . visible)
-                      (window-height . 0.3))))
+(use-package eshell-prompt-extras
+    :after esh-opt
+    :defines eshell-highlight-prompt
+    :commands (epe-theme-lambda epe-theme-dakrone epe-theme-pipeline)
+    :init (setq eshell-highlight-prompt nil
+                eshell-prompt-function #'epe-theme-lambda))
+
+(use-package esh-autosuggest
+    :bind (:map eshell-mode-map
+           ([remap eshell-pcomplete] . completion-at-point))
+    :hook ((eshell-mode . esh-autosuggest-mode)))
+
+(defun eshell-here ()
+  "Opens up a new shell in the directory associated with the
+current buffer's file. The eshell is renamed to match that
+directory to make multiple eshell windows easier."
+  (interactive)
+  (let* ((parent (if (buffer-file-name)
+                     (file-name-directory (buffer-file-name))
+                   default-directory))
+         (height (/ (window-total-height) 3))
+         (name   (car (last (split-string parent "/" t)))))
+    (split-window-vertically (- height))
+    (other-window 1)
+    (eshell "new")
+    (rename-buffer (concat "*eshell: " name "*"))
+
+    (insert (concat "ls"))
+    (eshell-send-input)))
 
 #+end_src
 
@@ -551,6 +575,29 @@ Start screen
 Using the @general package and @wk (which-key)
 
 #+begin_src emacs-lisp
+(defun move-tab-forward ()
+  (interactive)
+  (tab-bar-move-tab 1))
+(defun move-tab-backward ()
+  (interactive)
+  (tab-bar-move-tab -1))
+
+(defun kill-all-buffers-and-tab ()
+  "Kill all buffers in the current tab and close the tab."
+  (interactive)
+  (let ((current-tab (tab-bar--current-tab)))
+    ;; Kill all buffers associated with this tab's windows
+    (dolist (win (cdr (assq 'windows current-tab)))
+      (let ((buf (window-buffer win)))
+        (when (buffer-live-p buf)
+          (kill-buffer buf))))
+    ;; Close the tab
+    (tab-bar-close-tab)))
+
+(defun open-config ()
+  (interactive)
+  (find-file "~/.config/emacs/config.org"))
+
 (use-package general
   :after evil
   :config
@@ -613,14 +660,15 @@ Using the @general package and @wk (which-key)
 
   (cl/leader-keys
     "o"  '(:ignore t :wk "open")
-    "o t" '(vterm-toggle :wk "Open term")
+    "o t" '(projectile-run-eshell :wk "Open term")
+    "o T" '(eshell-here :wk "Open term here")
     "o h" '(dashboard-open :wk "Open home dashboard"))
 
   (cl/leader-keys
     "h"  '(:ignore t :wk "help")
     "h f" '(describe-function :wk "Describe function")
     "h v" '(describe-variable :wk "Describe variable")
-    "h c"  '((lambda () (interactive) (find-file "~/.config/emacs/config.org")) :wk "Open config")
+    "h c"  '(open-config :wk "Open config")
     "h r"  '((lambda () (interactive) (load-file "~/.config/emacs/init.el")) :wk "Reload config"))
 
   (cl/leader-keys
@@ -635,14 +683,21 @@ Using the @general package and @wk (which-key)
     "w l" '(evil-window-right :wk "Window right")
     "w w" '(evil-window-next :wk "Goto next window"))
 
-  (cl/leader-keys
-    "b"  '(:ignore t :wk "buffer")
-    "b b" '(switch-to-buffer :wk "Switch buffer")
-    "b i" '(counsel-switch-buffer :wk "Show buffers")
-    "b c" '(kill-this-buffer :wk "Kill this buffer")
-    "b n" '(next-buffer :wk "Next buffer")
-    "b p" '(previous-buffer :wk "Previous buffer")
-    "b r" '(revert-buffer :wk "Reload buffer"))
+  (general-create-definer cl/buffer-leader-keys
+    :states '(normal insert visual emacs)
+    :keymaps 'override
+    :prefix "S-SPC"
+    :global-prefix "M-S-SPC")
+
+  (cl/buffer-leader-keys
+    "S-SPC" '(projectile-switch-to-buffer :wk "Switch buffer")
+    "SPC" '(projectile-switch-to-buffer-other-window :wk "Switch buffer split")
+    "a" '(switch-to-buffer :wk "Switch buffer (all)")
+    "i" '(counsel-switch-buffer :wk "Show buffers")
+    "c" '(kill-this-buffer :wk "Kill this buffer")
+    "n" '(next-buffer :wk "Next buffer")
+    "p" '(previous-buffer :wk "Previous buffer")
+    "r" '(revert-buffer :wk "Reload buffer"))
 
   (cl/leader-keys
     "t"  '(:ignore t :wk "tabs")
@@ -650,9 +705,10 @@ Using the @general package and @wk (which-key)
     "t o" '(burly-open-bookmark :wk "Open tab bookmark")
     "t n" '(tab-bar-new-tab :wk "New tab")
     "t c" '(tab-bar-close-tab :wk "Close tab")
+    "t k" '(kill-all-buffers-and-tab :wk "KILL tab")
     "t r" '(tab-bar-rename-tab :wk "Rename tab")
-    "t f" '((lambda () (interactive) (tab-bar-move-tab 1)) :wk "Move tab forward")
-    "t b" '((lambda () (interactive) (tab-bar-move-tab -1)) :wk "Move tab backward")
+    "t f" '(move-tab-forward :wk "Move tab forward")
+    "t b" '(move-tab-backward :wk "Move tab backward")
     "t u" '(tab-bar-undo-close-tab :wk "Undo tab"))
 
   (general-create-definer cl/clj-keys
