@@ -5,6 +5,20 @@
 #+options: toc:3
 
 * Table of contents :toc:
+- [[#notes][NOTES]]
+- [[#todos][TODOs]]
+  - [[#going-to-a-file-eg-by-reference-should-open-an-existing-buffer][Going to a file e.g. by reference should open an existing buffer]]
+  - [[#httpssrhtniklaseklunddtache-use-for-child-proceses][https://sr.ht/~niklaseklund/dtache/ use for child proceses]]
+  - [[#to-not-recompile-status-go-without-need-export-status_go_src_overridehomedatareposstatusstatus-gostatus-go][to not recompile status-go without need `export STATUS_GO_SRC_OVERRIDE=$HOME/data/repos/status/status-go/status-go`]]
+  - [[#check-out-transient][check out transient]]
+  - [[#try-out-project-instead-of-projectile][try out project instead of projectile]]
+  - [[#remap-f-to-c-x][remap f to C-x]]
+  - [[#do-golden-ratio-][DO golden-ratio !!!]]
+  - [[#use-outline-for-folding][use outline for folding]]
+  - [[#add-keybind-for-evil-close-fold][add keybind for `evil-close-fold`]]
+  - [[#use-siblings-to-jump-between-quo-comps-and-previews-rx-macro][use siblings to jump between quo comps and previews (rx macro)]]
+  - [[#httpsgithubcommagitforge][https://github.com/magit/forge]]
+  - [[#use-httpsgithubcomminadcorfu-instead-of-company][use https://github.com/minad/corfu instead of company]]
 - [[#core-config][Core config]]
 - [[#packages][Packages]]
   - [[#package-manager-elpaca][Package Manager (Elpaca)]]
@@ -16,9 +30,11 @@
   - [[#treemacs][Treemacs]]
   - [[#dashboard][Dashboard]]
   - [[#tabs][Tabs]]
+  - [[#golden-ratio][Golden ratio]]
 - [[#language-support][Language support]]
   - [[#general][General]]
   - [[#clojurescript][Clojure(script)]]
+  - [[#formatting][Formatting]]
 - [[#magit][Magit]]
 - [[#keybindings][Keybindings]]
 - [[#interface][Interface]]
@@ -32,6 +48,24 @@
   - [[#general-config][General config]]
   - [[#source-code-block-tag-expansion][Source Code Block Tag Expansion]]
   - [[#org-projectile][Org-projectile]]
+
+* NOTES
+- Do not delete packages, disable them inside use-package
+
+* TODOs
+** TODO Going to a file e.g. by reference should open an existing buffer
+** TODO https://sr.ht/~niklaseklund/dtache/ use for child proceses
+** TODO to not recompile status-go without need `export STATUS_GO_SRC_OVERRIDE=$HOME/data/repos/status/status-go/status-go`
+** TODO check out transient
+** TODO try out project instead of projectile
+** DONE remap f to C-x
+** DONE DO golden-ratio !!!
+** TODO use outline for folding
+** TODO add keybind for `evil-close-fold`
+** TODO use siblings to jump between quo comps and previews (rx macro)
+** TODO https://github.com/magit/forge
+** TODO use https://github.com/minad/corfu instead of company
+
 
 * Core config
 
@@ -119,21 +153,24 @@ Very important that this is loaded first!!
 
 ** Load Evil-Mode
 #+begin_src emacs-lisp
-  (use-package evil
-    :init
-    (setq evil-want-integration t)
-    (setq evil-want-keybinding nil)
-    (setq evil-vsplit-window-right t)
-    (setq evil-split-window-below t)
-    (evil-mode))
+(use-package evil
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-vsplit-window-right t)
+  (setq evil-split-window-below t)
+  ;; Disables evil in eshell. Change buffer from eshell with (C-x b)
+  ;; (evil-set-initial-state 'eshell-mode 'emacs)
+  (setq evil-set-undo-system 'undo-redo)
+  (evil-mode))
 
-  (use-package evil-collection
-    :after evil
-    :config
-    (setq evil-collection-mode-list '(dashboard dired ibuffer magit))
-    (evil-collection-init))
+(use-package evil-collection
+  :after evil
+  :config
+  (setq evil-collection-mode-list '(dashboard dired ibuffer magit eshell))
+  (evil-collection-init))
 
-  (use-package evil-tutor)
+(use-package evil-tutor)
 #+end_src
 
 ** Whichkey
@@ -475,6 +512,21 @@ Start screen
 
 #+end_src
 
+** Golden ratio
+#+begin_src emacs-lisp
+
+(use-package golden-ratio
+  :config
+  (golden-ratio-mode 1)
+(setq golden-ratio-extra-commands
+    (append golden-ratio-extra-commands
+      '(evil-window-left
+        evil-window-right
+        evil-window-up
+        evil-window-down))))
+
+#+end_src
+
 * Language support
 ** General
 
@@ -535,19 +587,37 @@ Start screen
       )
 
 ;; Autoformatting with zprint
-(defun zprint-format-buffer ()
-  "Use zprint to format the current buffer."
-  (interactive)
-  (let ((original-point (point)))
-    (shell-command-on-region (point-min) (point-max) "zprint '{:search-config? true}'" (current-buffer) t)
-    (goto-char original-point)))
+;; (defun zprint-format-buffer ()
+;;   "Use zprint to format the current buffer."
+;;   (interactive)
+;;   (let ((original-point (point)))
+;;     (shell-command-on-region (point-min) (point-max) "zprint '{:search-config? true}'" (current-buffer) t)
+;;     (goto-char original-point)))
 
-(defun add-zprint-on-save-hook ()
-  "Add `zprint-format-buffer` to the `before-save-hook` for Clojure files."
-  (add-hook 'before-save-hook 'zprint-format-buffer nil t))
+;; (defun add-zprint-on-save-hook ()
+;;   "Add `zprint-format-buffer` to the `before-save-hook` for Clojure files."
+;;   (add-hook 'before-save-hook 'zprint-format-buffer nil t))
 
-(add-hook 'clojure-mode-hook 'add-zprint-on-save-hook)
-(add-hook 'clojurescript-mode-hook 'add-zprint-on-save-hook)
+;; (add-hook 'clojure-mode-hook 'add-zprint-on-save-hook)
+;; (add-hook 'clojurescript-mode-hook 'add-zprint-on-save-hook)
+#+end_src
+
+** Formatting
+
+#+begin_src emacs-lisp
+(use-package apheleia
+  :config
+  ;; Add formatter here
+  (setf (alist-get 'clj-zprint apheleia-formatters)
+        '("clj-zprint"
+          "{:search-config? true}"
+          file))
+
+  ;; Assign formatter to mode
+  (add-to-list 'apheleia-mode-alist '(clojure-mode . clj-zprint))
+  (add-to-list 'apheleia-mode-alist '(clojurescript-mode . clj-zprint))
+
+  (apheleia-global-mode t))
 #+end_src
 
 * Magit
@@ -606,7 +676,8 @@ Using the @general package and @wk (which-key)
   (general-define-key
      :states 'normal
      :keymaps 'override
-
+     "f" '(execute-extended-command :wk "Execute command")
+     "." '(find-file :wk "Find in current dir")
      "§ §" '(switch-to-buffer :wk "Switch buffer")
      ;;"TAB TAB" 'switch-to-buffer ;; breaks magit
      "g d" 'lsp-find-definition
@@ -656,7 +727,7 @@ Using the @general package and @wk (which-key)
     "f ." '(find-file :wk "Find current dir")
     "f f" '(counsel-ag :wk "Find by word")
     "f c" '(counsel-ag-thing-at-point :wk "Find at cursor")
-    "f r" '(counsel-recentf :wk "Find recent"))
+    "f r" '(projectile-recentf :wk "Find recent"))
 
   (cl/leader-keys
     "o"  '(:ignore t :wk "open")
@@ -720,6 +791,8 @@ Using the @general package and @wk (which-key)
   (cl/clj-keys
     "e"  '(:ignore t :wk "evaluate")
     "e b" '(cider-eval-buffer :wk "REPL eval buffer")
+    "e c" '(cider-pprint-eval-last-sexp-to-comment :wk "REPL eval to comment")
+    "e r" '(cider-pprint-eval-last-sexp-to-repl :wk "REPL eval to repl")
     "e e" '(cider-eval-list-at-point :wk "REPL eval around"))
 
   (cl/clj-keys
@@ -789,8 +862,10 @@ Disabling bloat GUI
 
 Showing line numbers and stuff
 #+begin_src emacs-lisp
-  (global-display-line-numbers-mode 1)
-  (global-visual-line-mode t)
+(global-display-line-numbers-mode 1)
+(global-visual-line-mode 1)
+;;(setq-default word-wrap t)
+(toggle-truncate-lines -1)
 #+end_src
 
 ** Colors
