@@ -1,3 +1,4 @@
+
 #+TITLE config
 #+AUTHOR: clauxx
 #+DESCRIPTION: My personal config for Emacs
@@ -7,18 +8,6 @@
 * Table of contents :toc:
 - [[#notes][NOTES]]
 - [[#todos][TODOs]]
-  - [[#going-to-a-file-eg-by-reference-should-open-an-existing-buffer][Going to a file e.g. by reference should open an existing buffer]]
-  - [[#httpssrhtniklaseklunddtache-use-for-child-proceses][https://sr.ht/~niklaseklund/dtache/ use for child proceses]]
-  - [[#to-not-recompile-status-go-without-need-export-status_go_src_overridehomedatareposstatusstatus-gostatus-go][to not recompile status-go without need `export STATUS_GO_SRC_OVERRIDE=$HOME/data/repos/status/status-go/status-go`]]
-  - [[#check-out-transient][check out transient]]
-  - [[#try-out-project-instead-of-projectile][try out project instead of projectile]]
-  - [[#remap-f-to-c-x][remap f to C-x]]
-  - [[#do-golden-ratio-][DO golden-ratio !!!]]
-  - [[#use-outline-for-folding][use outline for folding]]
-  - [[#add-keybind-for-evil-close-fold][add keybind for `evil-close-fold`]]
-  - [[#use-siblings-to-jump-between-quo-comps-and-previews-rx-macro][use siblings to jump between quo comps and previews (rx macro)]]
-  - [[#httpsgithubcommagitforge][https://github.com/magit/forge]]
-  - [[#use-httpsgithubcomminadcorfu-instead-of-company][use https://github.com/minad/corfu instead of company]]
 - [[#core-config][Core config]]
 - [[#packages][Packages]]
   - [[#package-manager-elpaca][Package Manager (Elpaca)]]
@@ -28,12 +17,15 @@
   - [[#eshell][EShell]]
   - [[#projectile][Projectile]]
   - [[#treemacs][Treemacs]]
+  - [[#detached][Detached]]
   - [[#dashboard][Dashboard]]
   - [[#tabs][Tabs]]
   - [[#golden-ratio][Golden ratio]]
+  - [[#multiple-cursors][Multiple cursors]]
 - [[#language-support][Language support]]
   - [[#general][General]]
   - [[#clojurescript][Clojure(script)]]
+  - [[#golang][Golang]]
   - [[#formatting][Formatting]]
 - [[#magit][Magit]]
 - [[#keybindings][Keybindings]]
@@ -53,24 +45,26 @@
 - Do not delete packages, disable them inside use-package
 
 * TODOs
-** TODO Going to a file e.g. by reference should open an existing buffer
-** TODO https://sr.ht/~niklaseklund/dtache/ use for child proceses
-** TODO to not recompile status-go without need `export STATUS_GO_SRC_OVERRIDE=$HOME/data/repos/status/status-go/status-go`
-** TODO check out transient
-** TODO try out project instead of projectile
-** DONE remap f to C-x
-** DONE DO golden-ratio !!!
-** TODO use outline for folding
-** TODO add keybind for `evil-close-fold`
-** TODO use siblings to jump between quo comps and previews (rx macro)
-** TODO https://github.com/magit/forge
-** TODO use https://github.com/minad/corfu instead of company
+*** TODO Going to a file e.g. by reference should open an existing buffer
+*** DONE https://sr.ht/~niklaseklund/dtache/ use for child proceses
+*** TODO to not recompile status-go without need `export STATUS_GO_SRC_OVERRIDE=$HOME/data/repos/status/status-go/status-go`
+*** TODO check out transient
+*** TODO try out project instead of projectile
+*** DONE remap f to C-x
+*** DONE DO golden-ratio !!!
+*** TODO use outline for folding
+*** TODO add keybind for `evil-close-fold`
+*** TODO use siblings to jump between quo comps and previews (rx macro)
+*** TODO https://github.com/magit/forge
+*** TODO use https://github.com/minad/corfu instead of company
+*** TODO make Magit open in a new frame at the center (not fullscreen), so it doesn't affect the screen layout
+**** make it a self-contained package?
+**** name it `fragit`
 
 
 * Core config
 
 #+begin_src emacs-lisp
-(server-start)
 (setq completion-cycle-threshold t) ;; use TAB for cycling selections
 (setq enable-recursive-minibuffers t)
 
@@ -163,6 +157,9 @@ Very important that this is loaded first!!
   ;; (evil-set-initial-state 'eshell-mode 'emacs)
   (setq evil-set-undo-system 'undo-redo)
   (evil-mode))
+
+(with-eval-after-load 'evil-maps
+  (define-key evil-motion-state-map (kbd "RET") nil))
 
 (use-package evil-collection
   :after evil
@@ -311,9 +308,10 @@ Managing projects inside Emacs
   :config
   (setq projectile-indexing-method 'alien)
   (setq projectile-completion-system 'ivy)
-  (setq projectile-project-search-path '("~/dev/" "~/work/")))
+  (setq projectile-project-search-path '(("~/dev/" . 3)))
+  (projectile-discover-projects-in-search-path))
 
-(setq async-shell-command-buffer 'display-buffer)
+;;(setq async-shell-command-buffer 'display-buffer)
 
 (setq status-clojure-buffer "*Status: run-ios*")
 (setq status-clojure-buffer "*Status: shadow-cljs*")
@@ -321,11 +319,12 @@ Managing projects inside Emacs
 
 (add-to-list 'display-buffer-alist '(status-clojure-buffer . (display-buffer-no-window . nil)))
 (add-to-list 'display-buffer-alist '(status-metro-buffer . (display-buffer-no-window . nil)))
+
 (defun projectile-shell-command (command &optional name)
   (interactive "MAsync shell command: \nsBuffer name (*Async Shell Command*): ")
   (let ((output-buffer (or name "*Async Shell Command*")))
     (projectile-with-default-dir (projectile-acquire-root)
-      (async-shell-command command output-buffer))))
+      (detached-shell-command command output-buffer))))
 #+end_src
 
 ** Treemacs
@@ -435,6 +434,20 @@ Managing projects inside Emacs
 
 #+end_src
 
+** Detached
+
+#+begin_src emacs-lisp
+
+(use-package detached
+  :ensure t
+  :init
+  (detached-init)
+  :bind (([remap async-shell-command] . detached-shell-command))
+  :custom ((detached-show-output-on-attach t)
+           (detached-terminal-data-command system-type)))
+
+#+end_src
+
 ** Dashboard
 Start screen
 
@@ -527,13 +540,20 @@ Start screen
 
 #+end_src
 
+** Multiple cursors
+#+begin_src elisp
+(use-package evil-mc
+  :config
+  (global-evil-mc-mode 1))
+#+end_src
+
 * Language support
 ** General
 
 #+begin_src emacs-lisp
 (use-package lsp-mode
   :init
-  (setq lsp-file-watch-threshold 3000)
+  (setq lsp-file-watch-threshold 10000)
   (setq lsp-enable-which-key-integration t))
 (use-package lsp-treemacs)
 (use-package flycheck)
@@ -565,18 +585,19 @@ Start screen
 
 (add-hook 'clojure-mode-hook #'evil-cleverparens-mode)
 (add-hook 'clojurescript-mode-hook #'evil-cleverparens-mode)
+(add-hook 'cider-repl-mode-hook #'evil-cleverparens-mode)
 
 (add-hook 'clojure-mode-hook 'lsp)
-(add-hook 'clojure-mode-hook #'cider-mode)
-(add-hook 'clojure-mode-hook 'smartparens-mode)
-
 (add-hook 'clojurescript-mode-hook 'lsp)
-(add-hook 'clojurescript-mode-hook #'cider-mode)
-(add-hook 'clojurescript-mode-hook 'smartparens-mode)
-
 (add-hook 'cider-repl-mode-hook 'lsp)
+
+(add-hook 'clojure-mode-hook #'cider-mode)
+(add-hook 'clojurescript-mode-hook #'cider-mode)
 (add-hook 'cider-repl-mode-hook #'cider-mode)
-(add-hook 'cider-repl-mode-hook 'smartparens-mode)
+
+(add-hook 'clojure-mode-hook 'smartparens-strict-mode)
+(add-hook 'clojurescript-mode-hook 'smartparens-strict-mode)
+(add-hook 'cider-repl-mode-hook 'smartparens-strict-mode)
 
 (setq gc-cons-threshold (* 100 1024 1024)
       read-process-output-max (* 1024 1024)
@@ -586,58 +607,82 @@ Start screen
       ; lsp-enable-completion-at-point nil ; uncomment to use cider completion instead of lsp
       )
 
-;; Autoformatting with zprint
-;; (defun zprint-format-buffer ()
-;;   "Use zprint to format the current buffer."
-;;   (interactive)
-;;   (let ((original-point (point)))
-;;     (shell-command-on-region (point-min) (point-max) "zprint '{:search-config? true}'" (current-buffer) t)
-;;     (goto-char original-point)))
+;; Zprint
 
-;; (defun add-zprint-on-save-hook ()
-;;   "Add `zprint-format-buffer` to the `before-save-hook` for Clojure files."
-;;   (add-hook 'before-save-hook 'zprint-format-buffer nil t))
+;; Doesn't work with local configs and as of yet cannot be configured
+;; (use-package zprint-mode)
+;; (add-hook 'clojure-mode-hook 'zprint-mode)
+;; (add-hook 'clojurescript-mode-hook 'zprint-mode)
+;; (add-hook 'cider-repl-mode-hook 'lsp)
 
-;; (add-hook 'clojure-mode-hook 'add-zprint-on-save-hook)
-;; (add-hook 'clojurescript-mode-hook 'add-zprint-on-save-hook)
+(defun zprint-format-buffer ()
+  "Use zprint to format the current buffer."
+  (interactive)
+  (let ((original-point (point)))
+    (shell-command-on-region (point-min) (point-max) "zprint '{:search-config? true}'" (current-buffer) t)
+    (goto-char original-point)))
+
+(defun add-zprint-on-save-hook ()
+  "Add `zprint-format-buffer` to the `before-save-hook` for Clojure files."
+  (add-hook 'before-save-hook 'zprint-format-buffer nil t))
+
+(add-hook 'clojure-mode-hook 'add-zprint-on-save-hook)
+(add-hook 'clojurescript-mode-hook 'add-zprint-on-save-hook)
+
+;; Rainbow delimiters
+(use-package rainbow-delimiters)
+
+(add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
+(add-hook 'clojurescript-mode-hook #'rainbow-delimiters-mode)
+(add-hook 'cider-repl-mode-hook #'rainbow-delimiters-mode)
+
 #+end_src
 
+** Golang
+#+begin_src elisp
+(use-package go-mode)
+(add-hook 'go-mode-hook 'lsp-deferred)
+
+(use-package go-eldoc)
+(add-hook 'go-mode-hook 'go-eldoc-setup)
+
+(add-hook 'go-mode-hook 'lsp)
+#+end_src
 ** Formatting
 
 #+begin_src emacs-lisp
-(use-package apheleia
-  :config
-  ;; Add formatter here
-  (setf (alist-get 'clj-zprint apheleia-formatters)
-        '("clj-zprint"
-          "{:search-config? true}"
-          file))
+;; (use-package apheleia
+;;   :config
+;;   ;; Add formatter here
+;;   (setf (alist-get 'clj-zprint apheleia-formatters)
+;;         '("clj-zprint"
+;;           "{:search-config? true}"
+;;           file))
 
-  ;; Assign formatter to mode
-  (add-to-list 'apheleia-mode-alist '(clojure-mode . clj-zprint))
-  (add-to-list 'apheleia-mode-alist '(clojurescript-mode . clj-zprint))
+;;   ;; Assign formatter to mode
+;;   (add-to-list 'apheleia-mode-alist '(clojure-mode . clj-zprint))
+;;   (add-to-list 'apheleia-mode-alist '(clojurescript-mode . clj-zprint))
 
-  (apheleia-global-mode t))
+;;   (apheleia-global-mode t))
 #+end_src
 
 * Magit
 
 #+begin_src emacs-lisp
-  
-  (defun magit-status-fullscreen (prefix)
-    (interactive "P")
-    (magit-status)
-    (unless prefix
-      (delete-other-windows)))
+(defun magit-status-fullscreen (prefix)
+  (interactive "P")
+  (magit-status)
+  (unless prefix
+    (delete-other-windows)))
 
-    ; (winner-mode 1) ;; winner-mode remembers the window configurations, allowing you to easily switch back to previous configurations.
+  ; (winner-mode 1) ;; winner-mode remembers the window configurations, allowing you to easily switch back to previous configurations.
 
-    ; (defun magit-fullscreen ()
-    ;   "Open Magit status in a full window and remember previous configuration."
-    ;   (interactive)
-    ;   (delete-other-windows)
-    ;   (magit-status-setup-buffer)
-    ;   (add-hook 'magit-mode-quit-window-hook 'winner-undo nil t))
+  ; (defun magit-fullscreen ()
+  ;   "Open Magit status in a full window and remember previous configuration."
+  ;   (interactive)
+  ;   (delete-other-windows)
+  ;   (magit-status-setup-buffer)
+  ;   (add-hook 'magit-mode-quit-window-hook 'winner-undo nil t))
 
 #+end_src
 
@@ -688,6 +733,9 @@ Using the @general package and @wk (which-key)
      ;; TODO Add focusing on the doc frame
      "K"  'lsp-ui-doc-toggle)
 
+
+  (general-unbind 'magit-mode-map "f")
+
   (general-create-definer cl/leader-keys
     :states '(normal insert visual emacs)
     :keymaps 'override
@@ -702,11 +750,22 @@ Using the @general package and @wk (which-key)
     "p" '(projectile-command-map :wk "projectile"))
 
   (cl/leader-keys
-    "TAB" '(treemacs-select-window :wk "Show treemacs"))
+    "g" '(:ignore :wk "lsp + magit")
+    "g d" '(lsp-find-definition :wk "Go to definition")
+    "g r" '(lsp-ui-peek-find-references :wk "Go to references") 
+    "g c" '(comment-line :wk "Comment line(s)")
+    "g e" '(lsp-rename :wk "Rename")
+    "g g" '(magit-status-fullscreen :wk "Show magit status"))
 
   (cl/leader-keys
-    "g" '(:ignore :wk "magit")
-    "g g" '(magit-status-fullscreen :wk "Show magit status"))
+    "m" '(:ignore :wk "multicursors")
+    "m a" '(evil-mc-make-all-cursors :wk "Add cursors to all")
+    "m c" '(evil-mc-undo-all-cursors :wk "Undo all cursors")
+    "m m" '(evil-mc-make-and-goto-next-match :wk "Add cursor and go to next")
+    "m u" '(evil-mc-undo-last-added-cursor :wk "Undo cursor")
+    "m s" '(evil-mc-skip-and-goto-next-match :wk "Skip cursor and go to next")
+    "m p" '(evil-mc-pause-cursors :wk "Pause cursors")
+    "m r" '(evil-mc-resume-cursors :wk "Resume cursors"))
 
   (cl/leader-keys
     "e"  '(:ignore t :wk "evaluate")
@@ -863,9 +922,13 @@ Disabling bloat GUI
 Showing line numbers and stuff
 #+begin_src emacs-lisp
 (global-display-line-numbers-mode 1)
-(global-visual-line-mode 1)
+;;(global-visual-line-mode 1)
 ;;(setq-default word-wrap t)
-(toggle-truncate-lines -1)
+;;(toggle-truncate-lines -1)
+(setq-default truncate-lines t)
+(setq-default global-visual-line-mode t)
+(visual-line-mode)
+;;(setq truncate-partial-width-windows t)
 #+end_src
 
 ** Colors
@@ -895,6 +958,7 @@ Showing line numbers and stuff
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 (electric-indent-mode -1) ;; removes weird indentiation is source blocks
 (setq org-edit-src-content-indentation 0)
+(setq org-return-follows-link t)
 #+end_src
 
 ** Source Code Block Tag Expansion
