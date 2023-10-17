@@ -13,7 +13,8 @@
   - [[#package-manager-elpaca][Package Manager (Elpaca)]]
   - [[#load-evil-mode][Load Evil-Mode]]
   - [[#whichkey][Whichkey]]
-  - [[#ivy][Ivy]]
+  - [[#ivy-disabled][Ivy (disabled)]]
+  - [[#verticoconsultcorfu][Vertico/Consult/Corfu]]
   - [[#eshell][EShell]]
   - [[#projectile][Projectile]]
   - [[#treemacs][Treemacs]]
@@ -45,13 +46,12 @@
 - Do not delete packages, disable them inside use-package
 
 * TODOs
+*** TODO move config out of org file (gets pretty annoying)
+*** TODO learn org-mode
 *** TODO Going to a file e.g. by reference should open an existing buffer
-*** DONE https://sr.ht/~niklaseklund/dtache/ use for child proceses
 *** TODO to not recompile status-go without need `export STATUS_GO_SRC_OVERRIDE=$HOME/data/repos/status/status-go/status-go`
 *** TODO check out transient
 *** TODO try out project instead of projectile
-*** DONE remap f to C-x
-*** DONE DO golden-ratio !!!
 *** TODO use outline for folding
 *** TODO add keybind for `evil-close-fold`
 *** TODO use siblings to jump between quo comps and previews (rx macro)
@@ -60,6 +60,9 @@
 *** TODO make Magit open in a new frame at the center (not fullscreen), so it doesn't affect the screen layout
 **** make it a self-contained package?
 **** name it `fragit`
+*** DONE https://sr.ht/~niklaseklund/dtache/ use for child proceses
+*** DONE remap f to C-x
+*** DONE DO golden-ratio !!!
 
 
 * Core config
@@ -74,6 +77,9 @@
 (setq split-width-threshold 0)
 
 ;;(setq-default message-log-max nil)
+
+;; Persist history over Emacs restarts
+(savehist-mode 1)
 #+end_src
 
 * Packages
@@ -156,7 +162,10 @@ Very important that this is loaded first!!
   ;; Disables evil in eshell. Change buffer from eshell with (C-x b)
   ;; (evil-set-initial-state 'eshell-mode 'emacs)
   (setq evil-set-undo-system 'undo-redo)
-  (evil-mode))
+  (setq evil-inhibit-esc nil)
+  :config
+  (evil-set-initial-state 'minibuffer-mode 'emacs)
+  (evil-mode +1))
 
 (with-eval-after-load 'evil-maps
   (define-key evil-motion-state-map (kbd "RET") nil))
@@ -191,69 +200,205 @@ Very important that this is loaded first!!
           which-key-separator " → " ))
 #+end_src
 
-** Ivy
+** Ivy (disabled)
 Search
 
 #+begin_src emacs-lisp
-(use-package counsel
-  :after ivy
-  :config (counsel-mode))
+;; (use-package counsel
+;;   :after ivy
+;;   :config (counsel-mode))
 
-(use-package ivy
-  :custom
-  (setq ivy-use-virtual-buffers t)
-  (setq ivy-count-format "(%d/%d) ")
-  (setq ivy-wrap t)
-  (setq ivy-action-wrap t)
-  (setq enable-recursive-minibuffers t)
-  ;; not working :(
-  ;; (add-to-list 'ivy-ignore-buffers "\\*scratch\\*")
-  ;; (add-to-list 'ivy-ignore-buffers "\\*lsp-log\\*")
-  ;; (add-to-list 'ivy-ignore-buffers "\\*clojure-lsp\\*")
-  ;; (add-to-list 'ivy-ignore-buffers "\\*dashboard\\*")
-  ;; (add-to-list 'ivy-ignore-buffers "\\*Messages\\*")
-  :config
-  (define-key ivy-minibuffer-map (kbd "TAB") 'ivy-next-line)
-  (define-key ivy-minibuffer-map (kbd "J") 'ivy-next-line)
-  (define-key ivy-minibuffer-map (kbd "K") 'ivy-previous-line)
-  (define-key ivy-minibuffer-map (kbd "<ESC>") 'minibuffer-keyboard-quit)
-  (define-key swiper-map (kbd "<ESC>") 'minibuffer-keyboard-quit)
-  (ivy-mode))
+;; (use-package ivy
+;;   :custom
+;;   (setq ivy-use-virtual-buffers t)
+;;   (setq ivy-count-format "(%d/%d) ")
+;;   (setq ivy-wrap t)
+;;   (setq ivy-action-wrap t)
+;;   (setq enable-recursive-minibuffers t)
+;;   ;; not working :(
+;;   ;; (add-to-list 'ivy-ignore-buffers "\\*scratch\\*")
+;;   ;; (add-to-list 'ivy-ignore-buffers "\\*lsp-log\\*")
+;;   ;; (add-to-list 'ivy-ignore-buffers "\\*clojure-lsp\\*")
+;;   ;; (add-to-list 'ivy-ignore-buffers "\\*dashboard\\*")
+;;   ;; (add-to-list 'ivy-ignore-buffers "\\*Messages\\*")
+;;   :config
+;;   (define-key ivy-minibuffer-map (kbd "TAB") 'ivy-next-line)
+;;   (define-key ivy-minibuffer-map (kbd "J") 'ivy-next-line)
+;;   (define-key ivy-minibuffer-map (kbd "K") 'ivy-previous-line)
+;;   (define-key ivy-minibuffer-map (kbd "<ESC>") 'minibuffer-keyboard-quit)
+;;   (define-key swiper-map (kbd "<ESC>") 'minibuffer-keyboard-quit)
+;;   (ivy-mode))
 
-(use-package all-the-icons-ivy-rich
-  :ensure t
-  :init (all-the-icons-ivy-rich-mode 1))
+;; (use-package all-the-icons-ivy-rich
+;;   :ensure t
+;;   :init (all-the-icons-ivy-rich-mode 1))
 
-(use-package ivy-rich
-  :after counsel
-  :ensure t
-  :init (setq ivy-rich-parse-remote-file-path t)
-  :config (ivy-rich-mode 1))
+;; (use-package ivy-rich
+;;   :after counsel
+;;   :ensure t
+;;   :init (setq ivy-rich-parse-remote-file-path t)
+;;   :config (ivy-rich-mode 1))
 
-(use-package ivy-posframe
-  :after ivy
-  :ensure t
-  :custom-face
-  (ivy-posframe-border ((t (:background "#eceff1"))))
-  (ivy-posframe ((t (:background "#eceff1"))))
-  :init 
-  (setq ivy-posframe-width 100)
-  (setq ivy-posframe-height 11)
-  (setq ivy-posframe-border-width 32)
-  (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display)))
-  (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-center)))
-  (ivy-posframe-mode))
+;; (use-package ivy-posframe
+;;   :after ivy
+;;   :ensure t
+;;   :custom-face
+;;   (ivy-posframe-border ((t (:background "#eceff1"))))
+;;   (ivy-posframe ((t (:background "#eceff1"))))
+;;   :init 
+;;   (setq ivy-posframe-width 100)
+;;   (setq ivy-posframe-height 11)
+;;   (setq ivy-posframe-border-width 32)
+;;   (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display)))
+;;   (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-center)))
+;;   (ivy-posframe-mode))
 
-(defun ivy-with-thing-at-point (cmd)
-  (let ((ivy-initial-inputs-alist
-         (list
-          (cons cmd (thing-at-point 'symbol)))))
-    (funcall cmd)))
+;; (defun ivy-with-thing-at-point (cmd)
+;;   (let ((ivy-initial-inputs-alist
+;;          (list
+;;           (cons cmd (thing-at-point 'symbol)))))
+;;     (funcall cmd)))
 
-(defun counsel-ag-thing-at-point ()
+;; (defun counsel-ag-thing-at-point ()
+;;   (interactive)
+;;   (ivy-with-thing-at-point 'counsel-ag))
+#+end_src
+
+** Vertico/Consult/Corfu
+#+begin_src elisp
+
+;; --- VERTICO ---
+(use-package vertico
+  :init
+  (vertico-mode)
+
+  ;; Different scroll margin
+  ;; (setq vertico-scroll-margin 0)
+
+  ;; Show more candidates
+  ;; (setq vertico-count 20)
+
+  ;; Grow and shrink the Vertico minibuffer
+  ;; (setq vertico-resize t)
+
+  ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+  (setq vertico-cycle t)
+
+  ;; Do not allow the cursor in the minibuffer prompt
+  (setq minibuffer-prompt-properties
+        '(read-only t cursor-intangible t face minibuffer-prompt))
+  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+
+  ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+  ;; Vertico commands are hidden in normal buffers.
+  ;; (setq read-extended-command-predicate
+  ;;       #'command-completion-default-include-p)
+
+  (keymap-set vertico-map "<escape>" #'abort-recursive-edit)
+  (keymap-set vertico-map "?" #'minibuffer-completion-help)
+  (keymap-set vertico-map "TAB" #'vertico-next)
+  (keymap-set vertico-map "§" #'vertico-previous)
+  ;; Enable recursive minibuffers
+  (setq enable-recursive-minibuffers t))
+
+    ;; Option 1: Additional bindings
+    ;; (keymap-set vertico-map "M-RET" #'minibuffer-force-complete-and-exit)
+    ;; (keymap-set vertico-map "M-TAB" #'minibuffer-complete)
+
+    ;; Option 2: Replace `vertico-insert' to enable TAB prefix expansion.
+    ;; (keymap-set vertico-map "TAB" #'minibuffer-complete)
+
+  (use-package vertico-posframe
+     :after vertico
+     :ensure t
+     :custom-face
+     (vertico-posframe-border ((t (:background "#eceff1"))))
+     (vertico-posframe ((t (:background "#eceff1"))))
+     :init
+     (setq vertico-posframe-border-width 24)
+     :config 
+     (evil-set-initial-state 'vertico-posframe-mode 'emacs)
+     (vertico-posframe-mode 1))
+
+  ;; --- CONSULT ---
+
+  (use-package consult
+    ;; :hook (completion-list-mode . consult-preview-at-point-mode)
+
+    ;; The :init configuration is always executed (Not lazy)
+    :init
+
+    ;; Optionally configure the register formatting. This improves the register
+    ;; preview for `consult-register', `consult-register-load',
+    ;; `consult-register-store' and the Emacs built-ins.
+    (setq register-preview-delay 0.5
+          register-preview-function #'consult-register-format)
+
+    ;; Optionally tweak the register preview window.
+    ;; This adds thin lines, sorting and hides the mode line of the window.
+    (advice-add #'register-preview :override #'consult-register-window)
+
+    ;; Use Consult to select xref locations with preview
+    (setq xref-show-xrefs-function #'consult-xref
+          xref-show-definitions-function #'consult-xref)
+  )
+
+(defun u/consult-ripgrep-symbol-at-point ()
+  "Search for the symbol at point using consult-ripgrep.
+   If no project is found, search in the user's home directory."
   (interactive)
-  (ivy-with-thing-at-point 'counsel-ag))
+  (let ((symbol (thing-at-point 'symbol))
+        (search-dir (if (project-current)
+                        (project-root (project-current))
+                      (expand-file-name "~"))))
+    (if symbol
+        (consult-ripgrep search-dir symbol)
+      (message "No symbol at point."))))
 
+;; --- CORFU ---
+
+(use-package corfu
+  ;; Optional customizations
+  :custom
+  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-preselect 'prompt)
+  (corfu-auto t)                 ;; Enable auto completion
+  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+  ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+  ;; :bind
+  ;; (:map corfu-map
+  ;;   ("TAB" . corfu-next)
+  ;;   ([tab] . corfu-next)
+  ;;   ("S-TAB" . corfu-previous)
+  ;;   ([backtab] . corfu-previous))
+  :bind
+  (:map corfu-map
+        ("TAB" . corfu-next)
+        ([tab] . corfu-next)
+        ("§" . corfu-previous))
+  :config
+  (corfu-popupinfo-mode)
+  :init
+  (global-corfu-mode))
+
+(evil-make-overriding-map corfu-map)
+(advice-add 'corfu--setup :after 'evil-normalize-keymaps)
+(advice-add 'corfu--teardown :after 'evil-normalize-keymaps)
+
+  ;; --- ORDERLESS ---
+  (use-package orderless
+    :ensure t
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-overrides '((file (styles basic partial-completion)))))
+
+  ;; --- MARGINALIA ---
+  (use-package marginalia
+    :init
+    (marginalia-mode))
 #+end_src
 
 ** EShell 
@@ -274,11 +419,6 @@ Emacs' shell written in Elisp
     :commands (epe-theme-lambda epe-theme-dakrone epe-theme-pipeline)
     :init (setq eshell-highlight-prompt nil
                 eshell-prompt-function #'epe-theme-lambda))
-
-(use-package esh-autosuggest
-    :bind (:map eshell-mode-map
-           ([remap eshell-pcomplete] . completion-at-point))
-    :hook ((eshell-mode . esh-autosuggest-mode)))
 
 (defun eshell-here ()
   "Opens up a new shell in the directory associated with the
@@ -304,27 +444,28 @@ directory to make multiple eshell windows easier."
 Managing projects inside Emacs
 
 #+begin_src emacs-lisp
-(use-package projectile
-  :config
-  (setq projectile-indexing-method 'alien)
-  (setq projectile-completion-system 'ivy)
-  (setq projectile-project-search-path '(("~/dev/" . 3)))
-  (projectile-discover-projects-in-search-path))
+;; (use-package projectile
+;;   :config
+;;   (setq projectile-indexing-method 'alien)
+;;   (setq projectile-completion-system 'ivy)
+;;   (setq projectile-project-search-path '(("~/dev/" . 3)))
+;;   (projectile-discover-projects-in-search-path))
 
 ;;(setq async-shell-command-buffer 'display-buffer)
 
-(setq status-clojure-buffer "*Status: run-ios*")
-(setq status-clojure-buffer "*Status: shadow-cljs*")
-(setq status-metro-buffer "*Status: metro*")
+;; (setq status-clojure-buffer "*Status: run-ios*")
+;; (setq status-clojure-buffer "*Status: shadow-cljs*")
+;; (setq status-metro-buffer "*Status: metro*")
 
-(add-to-list 'display-buffer-alist '(status-clojure-buffer . (display-buffer-no-window . nil)))
-(add-to-list 'display-buffer-alist '(status-metro-buffer . (display-buffer-no-window . nil)))
+;; (add-to-list 'display-buffer-alist '(status-clojure-buffer . (display-buffer-no-window . nil)))
+;; (add-to-list 'display-buffer-alist '(status-metro-buffer . (display-buffer-no-window . nil)))
 
-(defun projectile-shell-command (command &optional name)
-  (interactive "MAsync shell command: \nsBuffer name (*Async Shell Command*): ")
-  (let ((output-buffer (or name "*Async Shell Command*")))
-    (projectile-with-default-dir (projectile-acquire-root)
-      (detached-shell-command command output-buffer))))
+;; (defun projectile-shell-command (command &optional name)
+;;   (interactive "MAsync shell command: \nsBuffer name (*Async Shell Command*): ")
+;;   (let ((output-buffer (or name "*Async Shell Command*")))
+;;     (projectile-with-default-dir (projectile-acquire-root)
+;;       (detached-shell-command command output-buffer))))
+
 #+end_src
 
 ** Treemacs
@@ -410,9 +551,9 @@ Managing projects inside Emacs
   :after (treemacs evil)
   :ensure t)
 
-(use-package treemacs-projectile
-  :after (treemacs projectile)
-  :ensure t)
+;; (use-package treemacs-projectile
+;;   :after (treemacs projectile)
+;;   :ensure t)
 
 (use-package treemacs-icons-dired
   :hook (dired-mode . treemacs-icons-dired-enable-once)
@@ -462,16 +603,17 @@ Start screen
   ;;(setq dashboard-startup-banner "/Users/clungu/.config/emacs/images/emacs-dash.png")  ;; use custom image as banner
   ;;(setq dashboard-startup-banner 'default)
   (setq dashboard-center-content nil) ;; set to 't' for centered content
+  (setq dashboard-projects-backend 'project-el)
   (setq dashboard-items '((recents . 5)
-                          ;(agenda . 5 )
+                          (agenda . 5 )
                           ;(bookmarks . 3)
-                          (projects . 3)
-                          (registers . 3)))
+                          (projects . 3)))
   :custom
   (dashboard-modify-heading-icons '((recents . "file-text")
                                     (bookmarks . "book")))
   :config
-  (dashboard-setup-startup-hook))
+  (dashboard-setup-startup-hook)
+  (dashboard-mode))
 #+end_src
 
 ** Tabs
@@ -555,9 +697,9 @@ Start screen
   :init
   (setq lsp-file-watch-threshold 10000)
   (setq lsp-enable-which-key-integration t))
-(use-package lsp-treemacs)
+;; (use-package lsp-treemacs)
 (use-package flycheck)
-(use-package company)
+;;(use-package company)
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :init
@@ -602,7 +744,7 @@ Start screen
 (setq gc-cons-threshold (* 100 1024 1024)
       read-process-output-max (* 1024 1024)
       treemacs-space-between-root-nodes nil
-      company-minimum-prefix-length 1
+      ; company-minimum-prefix-length 1
       ; lsp-enable-indentation nil ; uncomment to use cider indentation instead of lsp
       ; lsp-enable-completion-at-point nil ; uncomment to use cider completion instead of lsp
       )
@@ -743,11 +885,11 @@ Using the @general package and @wk (which-key)
     :global-prefix "M-SPC")
 
   (cl/leader-keys
-    "SPC"  '(projectile-find-file :wk "Search")
+    "SPC"  '(project-find-file :wk "Search")
     "c"    'kill-this-buffer)
 
-  (cl/leader-keys
-    "p" '(projectile-command-map :wk "projectile"))
+  ;; (cl/leader-keys
+  ;;   "p" '(projectile-command-map :wk "projectile"))
 
   (cl/leader-keys
     "g" '(:ignore :wk "lsp + magit")
@@ -777,20 +919,20 @@ Using the @general package and @wk (which-key)
 
     ;; status-mobile
     "e s"   '(:ignore t :wk "status-mobile")
-    "e s i" '((lambda () (interactive) (projectile-shell-command "make run-ios" status-clojure-buffer)) :wk "Run ios")
-    "e s c" '((lambda () (interactive) (projectile-shell-command "make run-clojure" status-clojure-buffer)) :wk "Run shadow-cljs")
-    "e s m" '((lambda () (interactive) (projectile-shell-command "make run-metro" status-metro-buffer)) :wk "Run metro"))
+    "e s i" '((lambda () (interactive) (project-shell-command "make run-ios" status-clojure-buffer)) :wk "Run ios")
+    "e s c" '((lambda () (interactive) (project-shell-command "make run-clojure" status-clojure-buffer)) :wk "Run shadow-cljs")
+    "e s m" '((lambda () (interactive) (project-shell-command "make run-metro" status-metro-buffer)) :wk "Run metro"))
 
   (cl/leader-keys
     "f"   '(:ignore t :wk "find")
     "f ." '(find-file :wk "Find current dir")
-    "f f" '(counsel-ag :wk "Find by word")
-    "f c" '(counsel-ag-thing-at-point :wk "Find at cursor")
-    "f r" '(projectile-recentf :wk "Find recent"))
+    "f f" '(consult-ripgrep :wk "Find by word")
+    "f c" '(u/consult-ripgrep-symbol-at-point :wk "Find at cursor")
+    "f r" '(consult-recent-file :wk "Find recent"))
 
   (cl/leader-keys
     "o"  '(:ignore t :wk "open")
-    "o t" '(projectile-run-eshell :wk "Open term")
+    "o t" '(project-eshell :wk "Open term")
     "o T" '(eshell-here :wk "Open term here")
     "o h" '(dashboard-open :wk "Open home dashboard"))
 
@@ -820,10 +962,9 @@ Using the @general package and @wk (which-key)
     :global-prefix "M-S-SPC")
 
   (cl/buffer-leader-keys
-    "S-SPC" '(projectile-switch-to-buffer :wk "Switch buffer")
-    "SPC" '(projectile-switch-to-buffer-other-window :wk "Switch buffer split")
+    "S-SPC" '(project-switch-to-buffer :wk "Switch buffer")
+    "SPC" '(consult-buffer-other-window :wk "Switch buffer split")
     "a" '(switch-to-buffer :wk "Switch buffer (all)")
-    "i" '(counsel-switch-buffer :wk "Show buffers")
     "c" '(kill-this-buffer :wk "Kill this buffer")
     "n" '(next-buffer :wk "Next buffer")
     "p" '(previous-buffer :wk "Previous buffer")
@@ -983,11 +1124,12 @@ Org-tempo is not a separate package but a module within org that can be enabled.
 
 ** Org-projectile
 #+begin_src emacs-lisp
-(use-package org-projectile
-  ;;:bind (("C-c n p" . org-project-capture-project-todo-completing-read))
-  :ensure t
-  :config
-  (progn
-    (setq org-project-capture-projects-file "~/org/projects.org")
-    (org-project-capture-single-file)))
+  ;;(use-package org-projectile
+  ;; ;;:bind (("C-c n p" . org-project-capture-project-todo-completing-read))
+  ;; :ensure t
+  ;; :config
+  ;; (progn
+  ;;   (setq org-project-capture-projects-file "~/org/projects.org")
+  ;;   (org-project-capture-single-file)))
+
 #+end_src
