@@ -23,6 +23,7 @@
   - [[#tabs][Tabs]]
   - [[#golden-ratio][Golden ratio]]
   - [[#multiple-cursors][Multiple cursors]]
+  - [[#pandoc][Pandoc]]
 - [[#language-support][Language support]]
   - [[#general][General]]
   - [[#clojurescript][Clojure(script)]]
@@ -51,12 +52,12 @@
 *** TODO Going to a file e.g. by reference should open an existing buffer
 *** TODO to not recompile status-go without need `export STATUS_GO_SRC_OVERRIDE=$HOME/data/repos/status/status-go/status-go`
 *** TODO check out transient
-*** TODO try out project instead of projectile
+*** DONE try out project instead of projectile
 *** TODO use outline for folding
 *** TODO add keybind for `evil-close-fold`
 *** TODO use siblings to jump between quo comps and previews (rx macro)
 *** TODO https://github.com/magit/forge
-*** TODO use https://github.com/minad/corfu instead of company
+*** DONE use https://github.com/minad/corfu instead of company
 *** TODO make Magit open in a new frame at the center (not fullscreen), so it doesn't affect the screen layout
 **** make it a self-contained package?
 **** name it `fragit`
@@ -298,6 +299,8 @@ Search
   (keymap-set vertico-map "?" #'minibuffer-completion-help)
   (keymap-set vertico-map "TAB" #'vertico-next)
   (keymap-set vertico-map "§" #'vertico-previous)
+  (keymap-set vertico-map "M-j" #'vertico-next)
+  (keymap-set vertico-map "M-k" #'vertico-previous)
   ;; Enable recursive minibuffers
   (setq enable-recursive-minibuffers t))
 
@@ -316,6 +319,7 @@ Search
      (vertico-posframe ((t (:background "#eceff1"))))
      :init
      (setq vertico-posframe-border-width 24)
+     (setq vertico-posframe-width 140)
      :config 
      (evil-set-initial-state 'vertico-posframe-mode 'emacs)
      (vertico-posframe-mode 1))
@@ -376,15 +380,16 @@ Search
   ;;   ([backtab] . corfu-previous))
   :bind
   (:map corfu-map
+        ("M-j" . corfu-next)
         ("TAB" . corfu-next)
-        ([tab] . corfu-next)
+        ("M-k" . corfu-previous)
         ("§" . corfu-previous))
   :config
   (corfu-popupinfo-mode)
   :init
   (global-corfu-mode))
 
-(evil-make-overriding-map corfu-map)
+;;(evil-make-overriding-map corfu-map)
 (advice-add 'corfu--setup :after 'evil-normalize-keymaps)
 (advice-add 'corfu--teardown :after 'evil-normalize-keymaps)
 
@@ -453,19 +458,23 @@ Managing projects inside Emacs
 
 ;;(setq async-shell-command-buffer 'display-buffer)
 
-;; (setq status-clojure-buffer "*Status: run-ios*")
-;; (setq status-clojure-buffer "*Status: shadow-cljs*")
-;; (setq status-metro-buffer "*Status: metro*")
+(setq status-ios-buffer "*Status: run-ios*")
+(setq status-android-buffer "*Status: run-android*")
+(setq status-clojure-buffer "*Status: shadow-cljs*")
+(setq status-metro-buffer "*Status: metro*")
 
-;; (add-to-list 'display-buffer-alist '(status-clojure-buffer . (display-buffer-no-window . nil)))
-;; (add-to-list 'display-buffer-alist '(status-metro-buffer . (display-buffer-no-window . nil)))
+(add-to-list 'display-buffer-alist '(status-clojure-buffer . (display-buffer-no-window . nil)))
+(add-to-list 'display-buffer-alist '(status-metro-buffer . (display-buffer-no-window . nil)))
 
-;; (defun projectile-shell-command (command &optional name)
-;;   (interactive "MAsync shell command: \nsBuffer name (*Async Shell Command*): ")
-;;   (let ((output-buffer (or name "*Async Shell Command*")))
-;;     (projectile-with-default-dir (projectile-acquire-root)
-;;       (detached-shell-command command output-buffer))))
-
+(defun project-detached-shell-command (command &optional name)
+  (interactive "MAsync shell command: \nsBuffer name (*Async Shell Command*): ")
+  (let ((output-buffer (or name "*Async Shell Command*"))
+        (project-root (car (last (project-current))))) ; using project.el
+    (message project-root)
+    (if project-root
+        (let ((default-directory project-root))
+          (detached-shell-command command output-buffer))
+      (message "Not in a project directory."))))
 #+end_src
 
 ** Treemacs
@@ -689,6 +698,12 @@ Start screen
   (global-evil-mc-mode 1))
 #+end_src
 
+** Pandoc
+#+begin_src elisp
+(use-package pandoc-mode)
+(add-hook 'markdown-mode-hook 'pandoc-mode)
+#+end_src
+
 * Language support
 ** General
 
@@ -703,11 +718,15 @@ Start screen
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :init
-  ;(setq lsp-ui-sideline-show-hover 1)
-  (setq lsp-ui-sideline-enable nil)
+  ;;(setq lsp-ui-sideline-show-hover 1)
+  ;;(setq lsp-ui-sideline-enable nil)
+  ;;(setq lsp-ui-sideline-show-symbol nil)
+  (setq lsp-ui-sideline-show-diagnostics t)
   (setq lsp-ui-doc-position 'at-point)
-  (setq lsp-ui-doc-use-childframe t)
-  (setq lsp-ui-doc-enable 1))
+  ;;(setq lsp-ui-doc-use-childframe t)
+  (setq lsp-ui-doc-enable 1)
+  :config
+  (lsp-ui-sideline-mode))
 #+end_src
 
 ** Clojure(script)
@@ -757,19 +776,19 @@ Start screen
 ;; (add-hook 'clojurescript-mode-hook 'zprint-mode)
 ;; (add-hook 'cider-repl-mode-hook 'lsp)
 
-(defun zprint-format-buffer ()
-  "Use zprint to format the current buffer."
-  (interactive)
-  (let ((original-point (point)))
-    (shell-command-on-region (point-min) (point-max) "zprint '{:search-config? true}'" (current-buffer) t)
-    (goto-char original-point)))
+;; (defun zprint-format-buffer ()
+;;   "Use zprint to format the current buffer."
+;;   (interactive)
+;;   (let ((original-point (point)))
+;;     (shell-command-on-region (point-min) (point-max) "zprint '{:search-config? true}'" (current-buffer) t)
+;;     (goto-char original-point)))
 
-(defun add-zprint-on-save-hook ()
-  "Add `zprint-format-buffer` to the `before-save-hook` for Clojure files."
-  (add-hook 'before-save-hook 'zprint-format-buffer nil t))
+;; (defun add-zprint-on-save-hook ()
+;;   "Add `zprint-format-buffer` to the `before-save-hook` for Clojure files."
+;;   (add-hook 'before-save-hook 'zprint-format-buffer nil t))
 
-(add-hook 'clojure-mode-hook 'add-zprint-on-save-hook)
-(add-hook 'clojurescript-mode-hook 'add-zprint-on-save-hook)
+;; (add-hook 'clojure-mode-hook 'add-zprint-on-save-hook)
+;; (add-hook 'clojurescript-mode-hook 'add-zprint-on-save-hook)
 
 ;; Rainbow delimiters
 (use-package rainbow-delimiters)
@@ -793,19 +812,49 @@ Start screen
 ** Formatting
 
 #+begin_src emacs-lisp
-;; (use-package apheleia
-;;   :config
-;;   ;; Add formatter here
-;;   (setf (alist-get 'clj-zprint apheleia-formatters)
-;;         '("clj-zprint"
-;;           "{:search-config? true}"
-;;           file))
+(use-package apheleia
+  :init
+  (setq apheleia-log-only-errors nil)
+  (setq apheleia-mode-alist
+        '((clojure-mode . zprint)
+          (clojurescript-mode . zprint)
+          (css-mode . prettier)
+          (css-ts-mode . prettier)
+          (elixir-mode . mix-format)
+          (go-mode . gofmt)
+          (go-ts-mode . gofmt)
+          (html-mode . prettier)
+          (java-mode . google-java-format)
+          (js-mode . prettier)
+          (json-mode . prettier)
+          (json-ts-mode . prettier)
+          (ledger-mode . ledger)
+          (nix-mode . nixfmt)
+          (python-mode . black)
+          (ruby-mode . prettier)
+          (rust-mode . rustfmt)
+          (rustic-mode . rustfmt)
+          (sass-mode . prettier)
+          (terraform-mode . terraform)
+          (typescript-mode . prettier)
+          (typescript-tsx-mode . prettier)
+          (web-mode . prettier)
+          (yaml-mode . prettier)))
 
-;;   ;; Assign formatter to mode
-;;   (add-to-list 'apheleia-mode-alist '(clojure-mode . clj-zprint))
-;;   (add-to-list 'apheleia-mode-alist '(clojurescript-mode . clj-zprint))
-
-;;   (apheleia-global-mode t))
+  (setq apheleia-formatters
+        `((black . ("black" "-"))
+          (gofmt . ("gofmt"))
+          (gofumpt . ("gofumpt"))
+          (google-java-format . ("google-java-format" "-"))
+          (ledger . pkg-apheleia/formatter-ledger)
+          (lisp-indent . apheleia-indent-lisp-buffer)
+          (mix-format . ("mix" "format" "-"))
+          (nixfmt . pkg-apheleia/formatter-nixfmt)
+          (ocamlformat . (ocamlformat . ("ocamlformat" "-" "--name" filepath "--enable-outside-detected-project")))
+          (rustfmt . ("rustfmt" "--skip-children" "--quiet" "--emit" "stdout"))
+          (terraform . ("terraform" "fmt" "-"))
+          (zprint "zprint" "{:search-config? true}")))
+  (apheleia-global-mode t))
 #+end_src
 
 * Magit
@@ -868,15 +917,13 @@ Using the @general package and @wk (which-key)
      "§ §" '(switch-to-buffer :wk "Switch buffer")
      ;;"TAB TAB" 'switch-to-buffer ;; breaks magit
      "g d" 'lsp-find-definition
-     "g D" 'lsp-ui-peek-find-references
+     "g D" 'lsp-ui-peek-find-definitions
+     "g r" 'lsp-find-references
      "g c" 'comment-line
-     ;;"g D" 'lsp-treemacs-references
-     "g r" 'lsp-rename
+     "g R" 'lsp-rename
      ;; TODO Add focusing on the doc frame
-     "K"  'lsp-ui-doc-toggle)
-
-
-  (general-unbind 'magit-mode-map "f")
+     "K"  'lsp-ui-doc-glance
+     "C-k" 'lsp-ui-doc-focus-frame)
 
   (general-create-definer cl/leader-keys
     :states '(normal insert visual emacs)
@@ -888,6 +935,13 @@ Using the @general package and @wk (which-key)
     "SPC"  '(project-find-file :wk "Search")
     "c"    'kill-this-buffer)
 
+  (general-unbind 'magit-mode-map "M-1" "M-2" "M-3" "M-4" "M-5" "M-6" "M-7" "M-8" "M-9")
+
+  (general-def
+    :keymaps 'magit-mode-map
+    "f" nil
+    "M-f" 'magit-fetch)
+
   ;; (cl/leader-keys
   ;;   "p" '(projectile-command-map :wk "projectile"))
 
@@ -897,7 +951,7 @@ Using the @general package and @wk (which-key)
     "g r" '(lsp-ui-peek-find-references :wk "Go to references") 
     "g c" '(comment-line :wk "Comment line(s)")
     "g e" '(lsp-rename :wk "Rename")
-    "g g" '(magit-status-fullscreen :wk "Show magit status"))
+    "g g" '(magit-status :wk "Show magit status"))
 
   (cl/leader-keys
     "m" '(:ignore :wk "multicursors")
@@ -919,14 +973,18 @@ Using the @general package and @wk (which-key)
 
     ;; status-mobile
     "e s"   '(:ignore t :wk "status-mobile")
-    "e s i" '((lambda () (interactive) (project-shell-command "make run-ios" status-clojure-buffer)) :wk "Run ios")
-    "e s c" '((lambda () (interactive) (project-shell-command "make run-clojure" status-clojure-buffer)) :wk "Run shadow-cljs")
-    "e s m" '((lambda () (interactive) (project-shell-command "make run-metro" status-metro-buffer)) :wk "Run metro"))
+    "e s i" '((lambda () (interactive) (project-detached-shell-command "make run-ios" status-ios-buffer)) :wk "Run ios")
+    "e s I" '((lambda () (interactive) (project-detached-shell-command "open -a Simulator.app" status-ios-buffer)) :wk "Open ios simulator")
+    "e s a" '((lambda () (interactive) (project-detached-shell-command "adb reverse tcp:8081 tcp:8081; make run-android & emulator -avd Pixel_6_API_34" status-android-buffer)) :wk "Run android (emulator)")
+    "e s A" '((lambda () (interactive) (project-detached-shell-command "adb reverse tcp:8081 tcp:8081; make run-android" status-android-buffer)) :wk "Run android (device)")
+    "e s c" '((lambda () (interactive) (project-detached-shell-command "make run-clojure" status-clojure-buffer)) :wk "Run shadow-cljs")
+    "e s m" '((lambda () (interactive) (project-detached-shell-command "make run-metro" status-metro-buffer)) :wk "Run metro"))
 
   (cl/leader-keys
     "f"   '(:ignore t :wk "find")
     "f ." '(find-file :wk "Find current dir")
     "f f" '(consult-ripgrep :wk "Find by word")
+    "f F" '((lambda () (interactive) (consult-ripgrep default-directory)) :wk "Find by word")
     "f c" '(u/consult-ripgrep-symbol-at-point :wk "Find at cursor")
     "f r" '(consult-recent-file :wk "Find recent"))
 
@@ -982,16 +1040,22 @@ Using the @general package and @wk (which-key)
     "t b" '(move-tab-backward :wk "Move tab backward")
     "t u" '(tab-bar-undo-close-tab :wk "Undo tab"))
 
+  ;;TODO maybe doesn't have to be clj specific??
   (general-create-definer cl/clj-keys
     :states '(normal insert visual emacs)
     :keymaps 'clojure-mode-map 
     :prefix ","
     :global-prefix "M-,")
 
+  (cl/clj-keys 
+    "x" '(sp-kill-whole-line :wk "Remove whole line")
+    "c" '(sp-kill-sexp :wk "Remove sexp"))
+
   (cl/clj-keys
     "e"  '(:ignore t :wk "evaluate")
     "e b" '(cider-eval-buffer :wk "REPL eval buffer")
     "e c" '(cider-pprint-eval-last-sexp-to-comment :wk "REPL eval to comment")
+    "e f" '(cider-eval-defun-at-point :wk "REPL eval defun")
     "e r" '(cider-pprint-eval-last-sexp-to-repl :wk "REPL eval to repl")
     "e e" '(cider-eval-list-at-point :wk "REPL eval around"))
 
