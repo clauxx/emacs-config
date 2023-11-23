@@ -1,0 +1,12 @@
+.cache/
+.lsp-session-*
+*~
+detached/
+eln-cache/
+elpaca/
+eshell/
+history
+projects
+recentf
+tramp
+transient/
