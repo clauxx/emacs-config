@@ -619,7 +619,14 @@ directory to make multiple eshell windows easier."
   (setq cider-eval-result-prefix "--> "))
 
 ;; Paredit (kinda)
-(use-package evil-cleverparens)
+(use-package evil-cleverparens
+  :config
+  (sp-local-pair '(emacs-lisp-mode) "'" "'" :actions nil))
+
+;; Elisp (MOVE ME OUT OF HERE PLEASE)
+(add-to-list 'auto-mode-alist '("/\\.el'" . emacs-lisp-mode))
+(add-hook 'emacs-lisp-mode-hook #'smartparens-strict-mode)
+(add-hook 'emacs-lisp-mode-hook #'evil-cleverparens-mode)
 
 (add-hook 'clojure-mode-hook #'evil-cleverparens-mode)
 (add-hook 'clojurescript-mode-hook #'evil-cleverparens-mode)
@@ -694,6 +701,7 @@ directory to make multiple eshell windows easier."
           (css-mode . prettier)
           (css-ts-mode . prettier)
           (elixir-mode . mix-format)
+          (emacs-lisp-mode . lisp-indent)
           (go-mode . gofmt)
           (go-ts-mode . gofmt)
           (html-mode . prettier)
@@ -994,7 +1002,6 @@ directory to make multiple eshell windows easier."
 (use-package org-superstar
   :config
   (setq org-superstar-special-todo-items t)
-  (setq org-superstar-special-todo-items 'hide)
   (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
 
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
