@@ -1,4 +1,4 @@
-(setq custom-theme-directory (expand-file-name "themes/" user-emacs-directory))
+(setq custom-theme-directory (expand-file-name cl/themes-location user-emacs-directory))
 (load-theme 'noir t nil)
 
 (setq-default truncate-lines t

@@ -17,4 +17,20 @@
   :global t
   :keymap '())
 
+(defvar cl/core-location
+  "elisp/core/"
+  "Location of the core config")
+
+(defvar cl/packages-location
+  "elisp/packages/"
+  "Location of the emacs packages")
+
+(defvar cl/languages-location
+  "elisp/languages/"
+  "Location of the language configs")
+
+(defvar cl/themes-location
+  "elisp/themes/"
+  "Location of the emacs custom themes")
+
 (provide 'globals)

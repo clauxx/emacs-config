@@ -44,7 +44,6 @@
   (setq elpaca-use-package-by-default t))
 
 (mapc #'load-file (directory-files ".emacs.d/elisp" 'full "\\.el$"))
-;;(mapc #'load-file (directory-files "./.emacs.d/languages" 'full "\\.el$"))
 
 ;; Block until current queue processed.
 (elpaca-wait)

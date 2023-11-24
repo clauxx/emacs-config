@@ -1,7 +1,11 @@
-(add-to-list 'load-path (expand-file-name "elisp/core/" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "elisp/packages/" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "elisp/languages/" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "elisp/themes/" user-emacs-directory))
+(load-file
+ (expand-file-name "elisp/globals.el" user-emacs-directory))
+
+(defvar config-paths
+  (list cl/core-location
+	cl/packages-location
+	cl/languages-location
+	cl/themes-location))
 
 (defvar core-modules
   '(globals
@@ -46,6 +50,9 @@
 
 (defvar all-modules
   (append core-modules my-packages my-languages))
+
+(dolist (path config-paths)
+  (add-to-list 'load-path (expand-file-name path user-emacs-directory)))
 
 (dolist (mod all-modules)
   (require mod))
