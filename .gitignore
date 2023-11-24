@@ -4,9 +4,11 @@
 detached/
 eln-cache/
 elpaca/
+elpa/
 eshell/
 history
 projects
 recentf
 tramp
 transient/
+tabsession.el

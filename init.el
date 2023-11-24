@@ -1,19 +1,53 @@
-(org-babel-load-file
- (expand-file-name
-  "config.org"
-  user-emacs-directory))
-(put 'dired-find-alternate-file 'disabled nil)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("67aba385ce7ca220573299687ce330036c5b9cb53775713667f39314a12268d6" default))
- '(org-agenda-files '("/home/cl/org/life.org")))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+(add-to-list 'load-path (expand-file-name "elisp/core/" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "elisp/packages/" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "elisp/languages/" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "elisp/themes/" user-emacs-directory))
+
+(defvar core-modules
+  '(globals
+    utils
+    elpaca
+    theme
+    font
+    custom
+    emacs-config
+    nixos-config
+    keybindings
+    ;;tabs-config
+    project-config))
+
+(defvar my-packages
+  '(evil-pkg
+    envrc-pkg
+    org-pkg
+    icons-pkg
+    detached-pkg
+    tabspaces-pkg
+    smartparens-pkg
+    golden-ratio-pkg
+    dashboard-pkg
+    whichkey-pkg
+    rainbow-pkg
+    pandoc-pkg
+    apheleia-pkg
+    lsp-mode-pkg
+    ;;perspective-pkg
+    magit-pkg
+    general-pkg
+    vertico-pkg
+    consult-pkg
+    corfu-pkg
+    orderless-pkg
+    marginalia-pkg))
+
+(defvar my-languages
+  '(elisp-lang
+    clojure-lang
+    go-lang
+    nix-lang))
+
+(defvar all-modules
+  (append core-modules my-packages my-languages))
+
+(dolist (mod all-modules)
+  (require mod))
