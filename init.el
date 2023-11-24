@@ -13,7 +13,6 @@
     emacs-config
     nixos-config
     keybindings
-    ;;tabs-config
     project-config))
 
 (defvar my-packages
@@ -31,7 +30,6 @@
     pandoc-pkg
     apheleia-pkg
     lsp-mode-pkg
-    ;;perspective-pkg
     magit-pkg
     general-pkg
     vertico-pkg
