@@ -12,6 +12,7 @@
   :init
   (setq vertico-cycle t
 	enable-recursive-minibuffers t
+	vertico-posframe-poshandler #'posframe-poshandler-frame-top-center
 	minibuffer-prompt-properties '(read-only t cursor-intangible t face minibuffer-prompt))
   (vertico-mode))
 

@@ -31,6 +31,13 @@
    :states '(normal visual emacs)
    :keymaps 'cl/keys-mode-map
    :prefix cl/leader
+   "p"   '(:ignore t :wk "Project")
+   "p p" '(project-switch-project :wk "Switch project"))
+
+  (general-define-key
+   :states '(normal visual emacs)
+   :keymaps 'cl/keys-mode-map
+   :prefix cl/leader
    "o" '(:ignore t :wk "Open")
    "o s" '(project-shell :wk "Open shell in project")
    "o c" '(cl/open-config :wk "Open emacs config")

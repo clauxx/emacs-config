@@ -4,7 +4,7 @@
   (setq initial-buffer-choice 'dashboard-open
 	dashboard-set-file-icons t
 	dashboard-banner-logo-title "Emacs Is More Than A Text Editor!"
-	dashboard-center-content nil
+	dashboard-center-content t
 	dashboard-projects-backend 'project-el
 	dashboard-items '((recents . 5)
                           (agenda . 5 )

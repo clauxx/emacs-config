@@ -39,7 +39,7 @@
           (mix-format . ("mix" "format" "-"))
           (nixfmt . ("nixfmt"))
           (ocamlformat . (ocamlformat . ("ocamlformat" "-" "--name" filepath "--enable-outside-detected-project")))
-          (rustfmt . ("rustfmt" "--skip-children" "--quiet" "--emit" "stdout"))
+          (rustfmt . ("rustfmt" "--quiet" "--emit" "stdout"))
           (terraform . ("terraform" "fmt" "-"))
           (zprint "zprint" "{:search-config? true}")))
   (apheleia-global-mode t))

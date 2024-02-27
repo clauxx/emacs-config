@@ -17,5 +17,6 @@
  )
 
 (savehist-mode 1)
+(electric-pair-mode 1)
 
 (provide 'emacs-config)

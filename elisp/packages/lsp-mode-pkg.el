@@ -2,7 +2,9 @@
   :demand t
   :hook ((clojure-mode
 	  clojurescript-mode
-	  cider-repl-mode) . lsp)
+	  cider-repl-mode
+	  rustic-mode
+	  go-mode) . lsp)
   :init
   (setq lsp-file-watch-threshold 10000
 	lsp-enable-which-key-integration t))
@@ -24,9 +26,10 @@
   (general-define-key
    :states '(normal visual)
    :keymaps 'override
-   "g D" 'lsp-ui-peek-find-definitions
-   "g r" 'lsp-ui-peek-find-references
+   "g D" 'lsp-find-definition
+   "g r" 'lsp-find-references
    "g R" 'lsp-rename
+   "g a" 'lsp-execute-code-action
    "?"  'lsp-ui-doc-glance
    "C-/" 'lsp-ui-doc-focus-frame))
 

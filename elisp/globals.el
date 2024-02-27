@@ -33,4 +33,8 @@
   "elisp/themes/"
   "Location of the emacs custom themes")
 
+(defvar cl/user-location
+  "elisp/user/"
+  "Location of libraries built by me for me")
+
 (provide 'globals)

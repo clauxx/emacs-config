@@ -19,7 +19,7 @@
 (with-eval-after-load 'general
   (general-define-key
    :states 'normal
-   :keymaps 'cider-mode-map
+   :keymaps '(cider-mode-map clojure-mode-map clojurescript-mode-map)
    :prefix cl/sigma-leader
    "r"  '(:ignore t :wk "repl")
    "r r" '(cider-connect-cljs :wk "Connect REPL (cljs)")

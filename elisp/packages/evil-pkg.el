@@ -37,6 +37,13 @@
 
 (with-eval-after-load 'general
   (general-define-key
+   :states ''motion
+   :keymaps 'emacs-lisp-mode-map
+   "C-j" '(evil-scroll-line-up :wk "Scroll up")
+   "C-k" '(evil-scroll-line-down :wk "Scroll down")
+   "." '(find-file :wk "Find in current dir"))
+
+  (general-define-key
    :states '(normal visual emacs)
    :keymaps 'cl/keys-mode-map
    :prefix cl/leader

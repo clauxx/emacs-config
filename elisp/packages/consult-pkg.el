@@ -35,6 +35,11 @@
 
 (with-eval-after-load 'general
   (general-define-key
+   :states 'normal
+   :keymaps 'corfu-mode-map
+   "C-p" 'consult-yank-pop)
+
+  (general-define-key
    :states '(normal visual emacs)
    :keymaps 'cl/keys-mode-map
    :prefix cl/beta-leader
