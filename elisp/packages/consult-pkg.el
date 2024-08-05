@@ -43,8 +43,8 @@
    :states '(normal visual emacs)
    :keymaps 'cl/keys-mode-map
    :prefix cl/beta-leader
-   "S-SPC" '(consult-buffer :wk "Switch buffer")
-   "SPC" '(consult-buffer-other-window :wk "Switch buffer split"))
+   "S-SPC" '(consult-project-buffer :wk "Switch project buffer")
+   "SPC" '(consult-buffer :wk "Switch buffer (all)"))
 
   (general-define-key
    :states '(normal visual emacs)

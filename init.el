@@ -5,7 +5,10 @@
   (list cl/core-location
 	cl/packages-location
 	cl/languages-location
-	cl/themes-location))
+	cl/themes-location
+	cl/user-location))
+
+(defvar user-pkgs '(wiky))
 
 (defvar core-modules
   '(globals
@@ -40,16 +43,18 @@
     consult-pkg
     corfu-pkg
     orderless-pkg
+    request-pkg
     marginalia-pkg))
 
 (defvar my-languages
   '(elisp-lang
     clojure-lang
     go-lang
+    rust-lang
     nix-lang))
 
 (defvar all-modules
-  (append core-modules my-packages my-languages))
+  (append core-modules my-packages my-languages user-pkgs))
 
 (dolist (path config-paths)
   (add-to-list 'load-path (expand-file-name path user-emacs-directory)))

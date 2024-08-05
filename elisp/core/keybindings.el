@@ -47,10 +47,9 @@
    :states '(normal visual emacs)
    :keymaps 'cl/keys-mode-map
    :prefix cl/beta-leader
-   "a" '(switch-to-buffer :wk "Switch buffer (all)")
    "c" '(kill-this-buffer :wk "Kill this buffer")
-   "n" '(next-buffer :wk "Next buffer")
-   "p" '(previous-buffer :wk "Previous buffer")
+   "j" '(next-buffer :wk "Next buffer")
+   "k" '(previous-buffer :wk "Previous buffer")
    "r" '(revert-buffer :wk "Reload buffer")))
 
 (provide 'keybindings)

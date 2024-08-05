@@ -1,3 +1,9 @@
+(defun cl/modify-syntax-entry-as-word ()
+  (dolist (entry (list ?- ?? ?! ?@))
+    (modify-syntax-entry entry "w" cider-repl-mode-syntax-table)
+    (modify-syntax-entry entry "w" clojure-mode-syntax-table)
+    (modify-syntax-entry entry "w" clojurescript-mode-syntax-table)))
+
 (use-package clojure-mode
   :demand t)
 
@@ -7,6 +13,8 @@
   :hook ((clojure-mode
 	  clojurescript-mode
 	  cider-repl-mode) . cider-mode)
+  :config
+  (cl/modify-syntax-entry-as-word)
   :init
   (setq cider-use-overlays t
 	cider-repl-display-in-current-window t
