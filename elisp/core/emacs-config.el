@@ -16,6 +16,9 @@
 
  )
 
+(global-set-key (kbd "M-=") 'text-scale-increase)
+(global-set-key (kbd "M--") 'text-scale-decrease)
+
 (savehist-mode 1)
 (electric-pair-mode 1)
 

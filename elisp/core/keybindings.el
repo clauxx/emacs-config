@@ -31,6 +31,15 @@
    :states '(normal visual emacs)
    :keymaps 'cl/keys-mode-map
    :prefix cl/leader
+   "a" '(:ignore t :wk "Agenda")
+   "a a" '(org-agenda :wk "Show agenda")
+   "a c" '(org-capture :wk "Capture")
+   "a f" '(org-capture-finalize :wk "Finalize capture"))
+
+  (general-define-key
+   :states '(normal visual emacs)
+   :keymaps 'cl/keys-mode-map
+   :prefix cl/leader
    "p"   '(:ignore t :wk "Project")
    "p p" '(project-switch-project :wk "Switch project"))
 

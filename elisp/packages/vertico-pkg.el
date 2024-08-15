@@ -1,5 +1,4 @@
 (use-package vertico
-  :demand t
   :bind (:map vertico-map
 	      ("<escape>" . abort-recursive-edit)
 	      ("?" . minibuffer-completion-help)
@@ -12,7 +11,7 @@
   :init
   (setq vertico-cycle t
 	enable-recursive-minibuffers t
-	vertico-posframe-poshandler #'posframe-poshandler-frame-top-center
+	vertico-posframe-poshandler #'posframe-poshandler-frame-center
 	minibuffer-prompt-properties '(read-only t cursor-intangible t face minibuffer-prompt))
   (vertico-mode))
 

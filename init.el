@@ -25,6 +25,7 @@
 (defvar my-packages
   '(evil-pkg
     envrc-pkg
+    babashka-pkg
     org-pkg
     icons-pkg
     detached-pkg
@@ -51,7 +52,8 @@
     clojure-lang
     go-lang
     rust-lang
-    nix-lang))
+    nix-lang
+    yuck-lang))
 
 (defvar all-modules
   (append core-modules my-packages my-languages user-pkgs))

@@ -1,16 +1,15 @@
 (use-package lsp-mode
-  :demand t
   :hook ((clojure-mode
 	  clojurescript-mode
 	  cider-repl-mode
 	  rustic-mode
+	  nix-mode
 	  go-mode) . lsp)
   :init
   (setq lsp-file-watch-threshold 10000
 	lsp-enable-which-key-integration t))
 
 (use-package lsp-ui
-  :demand t
   :hook (lsp-mode . lsp-ui-mode)
   :init
   (setq lsp-ui-sideline-show-diagnostics t
@@ -19,8 +18,7 @@
   :config
   (lsp-ui-sideline-mode))
 
-(use-package flycheck
-  :demand t)
+(use-package flycheck)
 
 (with-eval-after-load 'general
   (general-define-key

@@ -1,5 +1,4 @@
 (use-package corfu
-  :demand t
   :after evil
   :custom
   (corfu-cycle t)
@@ -17,8 +16,8 @@
               ("§" . corfu-previous))
   :config
   (corfu-popupinfo-mode)
-  (advice-add 'corfu--setup :after 'evil-normalize-keymaps)
-  (advice-add 'corfu--teardown :after 'evil-normalize-keymaps)
+  (advice-add 'corfu--setup :after (lambda (&rest _) (evil-normalize-keymaps)))
+  (advice-add 'corfu--teardown :after (lambda (&rest _) (evil-normalize-keymaps)))
   :init
   (global-corfu-mode))
 

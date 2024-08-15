@@ -5,6 +5,7 @@
   (setq apheleia-mode-alist
         '((clojure-mode . zprint)
           (clojurescript-mode . zprint)
+          (yuck-mode . lisp-indent)
           (css-mode . prettier)
           (css-ts-mode . prettier)
           (elixir-mode . mix-format)

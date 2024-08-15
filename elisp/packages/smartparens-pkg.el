@@ -3,11 +3,13 @@
   :hook ((clojurescript-mode
 	  clojure-mode
 	  emacs-lisp-mode
-	  cider-repl-mode) . smartparens-strict-mode)
+	  cider-repl-mode
+	  yuck-mode) . smartparens-strict-mode)
   :hook ((clojurescript-mode
 	  clojure-mode
 	  emacs-lisp-mode
-	  cider-repl-mode) . evil-cleverparens-mode)
+	  cider-repl-mode
+	  yuck-mode) . evil-cleverparens-mode)
   :config
   (sp-local-pair '(emacs-lisp-mode) "'" "'" :actions nil))
 

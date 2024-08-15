@@ -1,18 +1,47 @@
-(setq org-agenda-files '("~/org")
+(setq org-directory "~/org"
+      org-default-notes-file (concat org-directory "/tasks.org")
+      org-agenda-files '("~/org")
+      org-archive-location "basement::** Finished Tasks"
       org-edit-src-content-indentation 0
       org-return-follows-link t
       calendar-week-start-day 1
-      electric-indent-mode -1)
+      electric-indent-mode -1
 
-(use-package org-superstar
-  :demand t
-  :hook (org-mode . (lambda ()
-		      (org-superstar-mode t)))
-  :config
-  (setq org-superstar-special-todo-items t))
+      org-auto-align-tags nil
+      org-tags-column 0
+      org-catch-invisible-edits 'show-and-error
+      ;;org-special-ctrl-a/e t
+      org-insert-heading-respect-content t
+
+      ;; Org styling, hide markup etc.
+      org-hide-emphasis-markers t
+      org-pretty-entities t
+
+      ;; Agenda styling
+      org-agenda-tags-column 0
+      org-agenda-block-separator ?─
+      org-agenda-time-grid
+      '((daily today require-timed)
+	(800 1000 1200 1400 1600 1800 2000)
+	" ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+      org-agenda-current-time-string
+      "◀── now ─────────────────────────────────────────────────"
+      org-ellipsis "…"
+
+      ;; Org Capture Templates
+      org-capture-templates
+      '(("t" "TODO" entry (file+headline org-default-notes-file "Tasks")
+	 "* TODO %? %^G \n  %U")
+	("s" "Scheduled TODO" entry (file+headline org-default-notes-file "Tasks")
+	 "* TODO %? %^G \nSCHEDULED: %^t\n  %U")
+	("d" "Deadline" entry (file+headline org-default-notes-file "Tasks")
+	 "* TODO %? %^G \n  DEADLINE: %^t")
+	("i" "Idea" entry (file+headline org-default-notes-file "Ideas")
+	 "* %? %^G")
+	("a" "Appointment" entry (file+headline org-default-notes-file "Appointments")
+	 "* %? %^G \n  %^t")))
 
 (use-package deft
-  :demand t
   :commands (deft)
   :config
   (setq deft-directory "~/org"
@@ -20,7 +49,6 @@
         deft-extensions '("md" "org")))
 
 (use-package evil-org
-  :demand t
   :after org
   :config
   (add-hook 'org-mode-hook 'evil-org-mode)
@@ -29,6 +57,11 @@
 				   '(textobjects insert navigation additional shift todo heading))))
   (require 'evil-org-agenda)
   (evil-org-agenda-set-keys))
+
+(use-package org-modern
+  :config
+  (global-org-modern-mode)
+  (message "Loaded org-modern"))
 
 ;; | Typing the below + TAB | Expands to ...                          |
 ;; |------------------------+-----------------------------------------|

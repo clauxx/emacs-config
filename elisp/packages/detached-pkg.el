@@ -1,5 +1,4 @@
 (use-package detached
-  :demand t
   :init
   (detached-init)
   :bind (([remap async-shell-command] . detached-shell-command))

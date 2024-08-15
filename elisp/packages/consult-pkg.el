@@ -1,6 +1,4 @@
 (use-package consult
-  :ensure t
-  :demand t
   :hook (completion-list-mode . consult-preview-at-point-mode)
   :init
   ;; Optionally configure the register formatting. This improves the register

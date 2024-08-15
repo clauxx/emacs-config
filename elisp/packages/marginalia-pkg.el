@@ -1,5 +1,4 @@
 (use-package marginalia
-  :demand t
   :init
   (marginalia-mode))
 

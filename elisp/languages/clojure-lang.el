@@ -4,11 +4,9 @@
     (modify-syntax-entry entry "w" clojure-mode-syntax-table)
     (modify-syntax-entry entry "w" clojurescript-mode-syntax-table)))
 
-(use-package clojure-mode
-  :demand t)
+(use-package clojure-mode)
 
 (use-package cider
-  :demand t
   :after clojure-mode
   :hook ((clojure-mode
 	  clojurescript-mode

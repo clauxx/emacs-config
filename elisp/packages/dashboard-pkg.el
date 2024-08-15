@@ -1,5 +1,4 @@
 (use-package dashboard
-  :demand t 
   :init
   (setq initial-buffer-choice 'dashboard-open
 	dashboard-set-file-icons t
@@ -7,9 +6,10 @@
 	dashboard-center-content t
 	dashboard-projects-backend 'project-el
 	dashboard-items '((recents . 5)
-                          (agenda . 5 )
+                          ;;(agenda . 5 )
                           (projects . 3)))
   :custom
+  (dashboard-filter-agenda-entry 'dashboard-no-filter-agenda)
   (dashboard-modify-heading-icons '((recents . "file-text")
                                     (bookmarks . "book")))
   :config
