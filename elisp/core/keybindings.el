@@ -31,19 +31,6 @@
    :states '(normal visual emacs)
    :keymaps 'cl/keys-mode-map
    :prefix cl/leader
-   "a" '(:ignore t :wk "Agenda")
-   "a A" '(org-agenda :wk "Show agenda")
-   "a a" '(org-agenda-list :wk "Current agenda")
-   "a t" '(org-todo-list :wk "TODOs")
-   "a m" '(org-tags-view :wk "Agenda by tag")
-   "a s" '(org-search-view :wk "Search in agenda")
-   "a c" '(org-capture :wk "Capture")
-   "a f" '(org-capture-finalize :wk "Finalize capture"))
-
-  (general-define-key
-   :states '(normal visual emacs)
-   :keymaps 'cl/keys-mode-map
-   :prefix cl/leader
    "p"   '(:ignore t :wk "Project")
    "p p" '(project-switch-project :wk "Switch project")
    "p e" '(flycheck-projectile-list-errors :wk "Project errors"))

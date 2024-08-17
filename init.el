@@ -34,6 +34,7 @@
     smartparens-pkg
     golden-ratio-pkg
     dashboard-pkg
+    doom-modeline-pkg
     whichkey-pkg
     rainbow-pkg
     pandoc-pkg

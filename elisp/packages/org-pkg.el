@@ -4,9 +4,17 @@
       org-archive-location "basement::** Finished Tasks"
       org-edit-src-content-indentation 0
       org-adapt-indentation t
-      org-return-follows-link t
-      calendar-week-start-day 1
+      org-return-follows-link t calendar-week-start-day 1
       electric-indent-mode t
+
+      org-todo-keywords '((sequence
+			   "TODO(!)"
+			   "DOIN(!)"
+			   "|"
+			   "DONE(!)"))
+
+      org-modern-todo-faces
+      '(("DOIN" . (:background "darkolivegreen" :weight bold)))
 
       ;; Edit settings
       org-auto-align-tags t
@@ -45,8 +53,18 @@
 	("a" "Appointment" entry (file+headline org-default-notes-file "Appointments")
 	 "* %? %^G \n  %^t")))
 
+(defun my-org-save-all-agenda-buffers ()
+  "Save all Org buffers after closing the Org Agenda."
+  (when (eq major-mode 'org-agenda-mode)
+    (org-save-all-org-buffers)))
+
+(add-hook 'kill-buffer-hook 'my-org-save-all-agenda-buffers)
+(add-hook 'org-mode-hook #'org-indent-mode)
+
 ;; NOTE: updating the "DONE" todos face whenever 
 (defface done_mask '((t (:foreground "gray" :strike-through "red"))) nil)
+(add-hook 'org-agenda-finalize-hook
+	  (lambda () (highlight-regexp " DONE .+" 'done_mask)))
 (add-hook 'org-after-todo-state-change-hook
 	  (lambda ()
 	    (highlight-regexp " DONE .+" 'done_mask)
@@ -82,6 +100,25 @@
 (use-package org-super-agenda
   :config
   (org-super-agenda-mode t))
+
+(with-eval-after-load 'general
+  (general-define-key
+   :states '(normal visual emacs)
+   :keymaps 'org-capture-mode-map
+   :prefix cl/leader
+   "a f" '(org-capture-finalize :wk "Finalize capture"))
+
+  (general-define-key
+   :states '(normal visual emacs)
+   :keymaps 'cl/keys-mode-map
+   :prefix cl/leader
+   "a" '(:ignore t :wk "Agenda")
+   "a A" '(org-agenda :wk "Show agenda")
+   "a a" '(org-agenda-list :wk "Current agenda")
+   "a t" '(org-todo-list :wk "TODOs")
+   "a m" '(org-tags-view :wk "Agenda by tag")
+   "a s" '(org-search-view :wk "Search in agenda")
+   "a c" '(org-capture :wk "Capture")))
 
 ;; | Typing the below + TAB | Expands to ...                          |
 ;; |------------------------+-----------------------------------------|
