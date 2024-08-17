@@ -25,6 +25,7 @@
 (defvar my-packages
   '(evil-pkg
     envrc-pkg
+    emojify-pkg
     babashka-pkg
     org-pkg
     icons-pkg

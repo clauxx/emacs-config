@@ -15,3 +15,5 @@ tabsession.el
 bookmarks
 games/
 request/
+*.sqlite
+emojis/

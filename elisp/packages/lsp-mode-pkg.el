@@ -20,7 +20,7 @@
 
 (use-package flycheck)
 (use-package flycheck-projectile
-  :after 'flycheck)
+  :after flycheck)
 
 (with-eval-after-load 'general
   (general-define-key
