@@ -30,6 +30,7 @@
     icons-pkg
     detached-pkg
     tabspaces-pkg
+    gptel-pkg
     smartparens-pkg
     golden-ratio-pkg
     dashboard-pkg
@@ -45,6 +46,7 @@
     corfu-pkg
     orderless-pkg
     request-pkg
+    ;; spacious-padding-pgk ;; Unused since looks weird with the Noir theme
     marginalia-pkg))
 
 (defvar my-languages

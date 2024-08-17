@@ -19,6 +19,8 @@
   (lsp-ui-sideline-mode))
 
 (use-package flycheck)
+(use-package flycheck-projectile
+  :after 'flycheck)
 
 (with-eval-after-load 'general
   (general-define-key

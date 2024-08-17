@@ -3,21 +3,25 @@
       org-agenda-files '("~/org")
       org-archive-location "basement::** Finished Tasks"
       org-edit-src-content-indentation 0
+      org-adapt-indentation t
       org-return-follows-link t
       calendar-week-start-day 1
-      electric-indent-mode -1
+      electric-indent-mode t
 
-      org-auto-align-tags nil
+      ;; Edit settings
+      org-auto-align-tags t
       org-tags-column 0
       org-catch-invisible-edits 'show-and-error
       ;;org-special-ctrl-a/e t
-      org-insert-heading-respect-content t
+      ;;org-insert-heading-respect-content t
 
       ;; Org styling, hide markup etc.
-      org-hide-emphasis-markers t
-      org-pretty-entities t
+      ;;org-pretty-entities t
+      org-agenda-prefix-format '((agenda . "☐ %i %?-12t% s"))
 
       ;; Agenda styling
+      org-agenda-span 14
+      org-agenda-start-day "-3d"
       org-agenda-tags-column 0
       org-agenda-block-separator ?─
       org-agenda-time-grid
@@ -41,6 +45,19 @@
 	("a" "Appointment" entry (file+headline org-default-notes-file "Appointments")
 	 "* %? %^G \n  %^t")))
 
+;; NOTE: updating the "DONE" todos face whenever 
+(defface done_mask '((t (:foreground "gray" :strike-through "red"))) nil)
+(add-hook 'org-after-todo-state-change-hook
+	  (lambda ()
+	    (highlight-regexp " DONE .+" 'done_mask)
+	    (run-at-time "0.0 sec" nil (lambda ()
+					 (org-agenda-redo)))))
+
+(custom-set-faces
+ '(org-agenda-date-weekend ((t (:background "gray70" :foreground "black" :slant italic))))
+ '(org-agenda-date ((t (:background "gray80" :foreground "black" :font-size 18))))
+ '(org-agenda-date-today ((t (:background "lemon chiffon" :foreground "black" :weight bold)))))
+
 (use-package deft
   :commands (deft)
   :config
@@ -60,8 +77,11 @@
 
 (use-package org-modern
   :config
-  (global-org-modern-mode)
-  (message "Loaded org-modern"))
+  (global-org-modern-mode))
+
+(use-package org-super-agenda
+  :config
+  (org-super-agenda-mode t))
 
 ;; | Typing the below + TAB | Expands to ...                          |
 ;; |------------------------+-----------------------------------------|
