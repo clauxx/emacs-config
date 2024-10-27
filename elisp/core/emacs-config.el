@@ -6,7 +6,8 @@
  enable-recursive-minibuffers t
  initial-scratch-message ""
  split-width-threshold 0
- 
+ redisplay-dont-pause t
+
  ;; Doesn't help
  ;; package-user-dir (expand-file-name ".cache/elpa/" user-emacs-directory)
  ;; Change location for Magit cache

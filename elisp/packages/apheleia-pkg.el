@@ -33,6 +33,7 @@
   (setq apheleia-formatters
         `((black . ("black" "-"))
           (gofmt . ("gofmt"))
+	  (prettier . ("prettier" filepath))
           (gofumpt . ("gofumpt"))
           (google-java-format . ("google-java-format" "-"))
           (ledger . pkg-apheleia/formatter-ledger)

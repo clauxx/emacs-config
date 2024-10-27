@@ -54,6 +54,7 @@
 (defvar my-languages
   '(elisp-lang
     clojure-lang
+    typescript-lang
     go-lang
     rust-lang
     nix-lang

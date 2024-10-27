@@ -2,6 +2,7 @@
   :hook ((clojure-mode
 	  clojurescript-mode
 	  cider-repl-mode
+	  typescript-mode
 	  rustic-mode
 	  nix-mode
 	  go-mode) . lsp)
